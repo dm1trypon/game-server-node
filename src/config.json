@@ -1,0 +1,163 @@
+{
+    "service": {
+        "port": 44444
+    },
+    "gameEngine": {
+        "fps": 60
+    },
+    "gameSettings": {
+        "objects": {
+            "scene": {
+                "size": {
+                    "width": 1920,
+                    "height": 1080
+                }
+            },
+            "players": {
+                "size": {
+                    "width": 50,
+                    "height": 50
+                },
+                "speed": 7
+            },
+            "bullets": {
+                "plazma": {
+                    "size": {
+                        "width": 30,
+                        "height": 30
+                    },
+                    "speed": 20,
+                    "rate": 40,
+                    "damage": 8,
+                    "default": true,
+                    "numberBullets": 0
+                },
+                "shotGun": {
+                    "size": {
+                        "width": 40,
+                        "height": 40
+                    },
+                    "speed": 35,
+                    "rate": 10,
+                    "damage": 35,
+                    "default": false,
+                    "numberBullets": 0
+                },
+                "miniGun": {
+                    "size": {
+                        "width": 25,
+                        "height": 25
+                    },
+                    "speed": 30,
+                    "rate": 80,
+                    "damage": 3,
+                    "default": false,
+                    "numberBullets": 0
+                },
+                "blaster": {
+                    "size": {
+                        "width": 30,
+                        "height": 30
+                    },
+                    "speed": 25,
+                    "rate": 30,
+                    "damage": 13,
+                    "default": false,
+                    "numberBullets": 0
+                }
+            },
+            "walls": {
+                "numberWalls": 50,
+                "wallLow": {
+                    "size": {
+                        "width": 40,
+                        "height": 40
+                    },
+                    "life": 30
+                },
+                "wallHigh": {
+                    "size": {
+                        "width": 40,
+                        "height": 40
+                    },
+                    "life": 100
+                },
+                "wallMax": {
+                    "size": {
+                        "width": 40,
+                        "height": 40
+                    },
+                    "life": 5000
+                }
+            },
+            "bufEffects": {
+                "medicine": {
+                    "size": {
+                        "width": 30,
+                        "height": 30
+                    },
+                    "interval": 15000,
+                    "health": [50, 150]
+                },
+                "boostSpeed": {
+                    "size": {
+                        "width": 30,
+                        "height": 30
+                    },
+                    "interval": 17000,
+                    "speed": [5, 10],
+                    "time": 20
+                },
+                "boostRate": {
+                    "size": {
+                        "width": 30,
+                        "height": 30
+                    },
+                    "interval": 20000,
+                    "rate": [10, 25],
+                    "time": 40
+                },
+                "doubleDamage": {
+                    "size": {
+                        "width": 30,
+                        "height": 30
+                    },
+                    "interval": 40000,
+                    "time": 15
+                },
+                "cartridgeBlaster": {
+                    "size": {
+                        "width": 30,
+                        "height": 30
+                    },
+                    "interval": 30000,
+                    "numberBullets": [50, 250]
+                },
+                "cartridgePlazma": {
+                    "size": {
+                        "width": 30,
+                        "height": 30
+                    },
+                    "interval": 40000,
+                    "numberBullets": [20, 100]
+                },
+                "cartridgeMiniGun": {
+                    "size": {
+                        "width": 30,
+                        "height": 30
+                    },
+                    "interval": 50000,
+                    "numberBullets": [100, 300]
+                },
+                "cartridgeShotGun": {
+                    "size": {
+                        "width": 30,
+                        "height": 30
+                    },
+                    "interval": 65000,
+                    "numberBullets": [10, 40]
+                }
+            }
+        }
+    }
+}
