@@ -1,9 +1,31 @@
 const Core = require('./Core');
+const {KEYS} = require('./consts');
 
 module.exports = class Events {
-    constructor(gameObjects) {
+    constructor(workJson, gameObjects) {
         this.gameObjects = gameObjects;
-        this.core = new Core(gameObjects);
+        this.workJson = workJson;
+        this.core = null;
+    }
+
+    initCore() {
+        this.core = new Core(this, this.gameObjects);
+        this.core.startLoop();
+    }
+    
+    onFpsEvent(objects) {
+        this.workJson.toJsonObjects(objects);
+    }
+
+    onLoopEvent(key) {
+        switch (key) {
+            case 'fps':
+                this.core.onFps();
+                break;
+
+            default:
+                break;
+        }
     }
 
     onMouse(dataObj) {
@@ -12,8 +34,15 @@ module.exports = class Events {
     }
 
     onKeyBoard(dataObj) {
-        const {nickname, key, hold} = dataObj;
+        const {nickname, key, isHold} = dataObj;
         
+        if (!KEYS.entries(key)) {
+            console.log(`Unallowed key ${key}`);
+
+            return;
+        }
+
+        this.core.controlPlayer({nickname, key, isHold});
     }
 
     isVerify(dataObj) {
@@ -23,5 +52,4 @@ module.exports = class Events {
     onDisconnect(hostClient) {
 
     }
-
 }

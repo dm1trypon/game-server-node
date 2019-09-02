@@ -1,7 +1,5 @@
 const WebSocket = new require('ws');
-const Loop = require('./Loop');
 const GameObjects = require('./GameObjects');
-const GameEngine = require('./GameEngine');
 const WorkJson = require('./WorkJson');
 
 module.exports = class Server {
@@ -9,7 +7,6 @@ module.exports = class Server {
         this.config = config;
         this.clients = {};
 
-        this.gameEngine = null;
         this.workJson = null;
     }
 
@@ -20,22 +17,21 @@ module.exports = class Server {
     start() {
         const gameObjects = new GameObjects();
 
-        this.gameEngine = new GameEngine(gameObjects);
         this.workJson = new WorkJson(this, gameObjects);
+        this.workJson.initEvents();
 
-        const {config, config: {service: {port}}} = this;
+        const {config: {service: {port}}} = this;
 
         this.server = new WebSocket.Server({port});
 
         console.log(`Server has been started on port ${port}`);
-
-        new Loop(config);
 
         this.events();
     }
 
     events() {
         const {workJson} = this;
+        
         this.server.on('connection', (ws, req) => {
             const hostClient = req.connection.remoteAddress;
 

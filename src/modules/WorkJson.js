@@ -4,7 +4,12 @@ module.exports = class WorkJson {
     constructor(server, gameObjects) {
         this.server = server;
         this.gameObjects = gameObjects;
-        this.events = new Events(gameObjects);
+        this.events = null;
+    }
+
+    initEvents() {
+        this.events = new Events(this, this.gameObjects);
+        this.events.initCore();
     }
 
     fromData(hostClient, data) {
@@ -48,8 +53,8 @@ module.exports = class WorkJson {
         }
     }
 
-    toObjectsJson() {
-
+    toJsonObjects(objects) {
+        this.server.sendAll(JSON.stringify(objects))
     }
 
     toVerify(host) {
