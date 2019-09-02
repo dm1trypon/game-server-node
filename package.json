@@ -12,6 +12,7 @@
   "devDependencies": {},
   "dependencies": {
     "fs": "0.0.1-security",
+    "socket.io": "^2.2.0",
     "websocket": "^1.0.29",
     "ws": "^7.1.2"
   }

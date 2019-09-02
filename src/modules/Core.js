@@ -1,12 +1,12 @@
 const Config = require('./Config');
 const Loop = require('./Loop');
-const {GAME_OBJECTS} = require('./consts');
+const {GAME_OBJECTS, MAX_ID} = require('./consts');
 
 module.exports = class Core {
     constructor(events, gameObjects) {
         this.events = events;
         this.gameObjects = gameObjects;
-        this.config = Config.getInstance();
+        this.config = Config.getInstance().getConfig();
         this.loop = null;
     }
 
@@ -28,15 +28,35 @@ module.exports = class Core {
         }
     }
 
+    createPlayer(nickname, players) {
+        const {gameSettings: {objects: {scene: {size: sizeScene}, players: {size: sizePlayers, speed}}}} = this.config;
+
+        const newPlayerObj = {
+            nickname,
+            id: this.getRandomNumber(0, MAX_ID),
+            posX: this.getRandomNumber(0, sizeScene.width),
+            posY: this.getRandomNumber(0, sizeScene.height),
+            width: sizePlayers.width,
+            height: sizePlayers.height,
+            speedX: 0,
+            speedY: 0,
+            speed,
+        }
+
+        players.push(newPlayerObj);
+
+        this.gameObjects.setGameObject('players', players);
+    }
+
     createBufEffect(bufEffect) {
-        const {gameSettings: {objects: {scene: {size: sizeScene}, bufEffects}}} = this.config.getConfig();
+        const {gameSettings: {objects: {scene: {size: sizeScene}, bufEffects}}} = this.config;
         const {size: sizeBuf} = bufEffects[bufEffect];
 
         let bufEffectsArray = this.gameObjects.getGameObject('bufEffects');
 
         let newBufEffect = {
             bufEffect,
-            id: this.getRandomNumber(0, 100000),
+            id: this.getRandomNumber(0, MAX_ID),
             posX: this.getRandomNumber(0, sizeScene.width),
             posY: this.getRandomNumber(0, sizeScene.height),
             width: sizeBuf.width,
@@ -111,7 +131,6 @@ module.exports = class Core {
     }
 
     isVerify(dataObj) {
-        const {gameSettings: {objects: {scene: {size: sizeScene}, players: {size: sizePlayers, speed}}}} = this.config.getConfig();
         const {nickname, hostClient} = dataObj;
 
         let players = this.gameObjects.getGameObject('players');
@@ -126,30 +145,12 @@ module.exports = class Core {
             return false;
         }
 
-        const newPlayerObj = {
-            nickname,
-            id: this.getRandomNumber(0, 100000),
-            posX: this.getRandomNumber(0, sizeScene.width),
-            posY: this.getRandomNumber(0, sizeScene.height),
-            width: sizePlayers.width,
-            height: sizePlayers.height,
-            speedX: 0,
-            speedY: 0,
-            speed,
-        }
-
-        players.push(newPlayerObj);
-
-        this.gameObjects.setGameObject('players', players);
-
-        console.log(`Player has been created!`);
-        console.log(newPlayerObj);
+        this.createPlayer(nickname, players);
 
         return true;
     }
 
     controlPlayer(controlData) {
-        // const {gameSettings: {objects: {players: {speed}}}} = this.config.getConfig();
         const {nickname, key, isHold} = controlData;
 
         let players = this.gameObjects.getGameObject('players');
@@ -181,8 +182,6 @@ module.exports = class Core {
         }
 
         const speed = players[index].speed;
-
-        console.log(`Player's speed: ${speed}, key: ${key}`);
 
         switch (key) {
             case 'up':
