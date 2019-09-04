@@ -29,8 +29,7 @@ module.exports = class Events {
     }
 
     onMouse(dataObj) {
-        const {nickname, posX, posY, offsetX, offsetY, isClicked} = dataObj;
-
+        this.core.onMouse(dataObj);
     }
 
     onKeyBoard(dataObj) {
@@ -49,7 +48,7 @@ module.exports = class Events {
         return this.core.isVerify(dataObj);
     }
 
-    onDisconnect(hostClient) {
-
+    onCloseConnection(idClient) {
+        this.core.onCloseConnection(idClient);
     }
 }

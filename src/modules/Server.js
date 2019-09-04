@@ -1,6 +1,7 @@
 const WebSocket = new require('ws');
 const GameObjects = require('./GameObjects');
 const WorkJson = require('./WorkJson');
+const {getRandomNumber} = require('./randomizer');
 
 module.exports = class Server {
     constructor(config) {
@@ -33,48 +34,52 @@ module.exports = class Server {
         const {workJson} = this;
         
         this.server.on('connection', (ws, req) => {
-            const hostClient = req.connection.remoteAddress;
+            const idClient = `${getRandomNumber(1, 100000)}`;
 
-            this.clients[hostClient] = ws;
+            this.clients[idClient] = ws;
 
-            console.log(`Client has been connected to server from ${hostClient}`);
+            console.log(`Client ${idClient} has been connected to server`);
 
-            workJson.toVerify(hostClient);
+            workJson.toVerify(idClient);
           
             ws.on('message', message => {
                 console.log(`Recieved message: ${message}`);
-                workJson.fromData(hostClient, message);
+                workJson.fromData(idClient, message);
             });
           
             ws.on('close', () => {
-                console.log(`Close connection from ${hostClient}`);
+                console.log(`Close connection from client ${idClient}`);
+                workJson.onCloseConnection(idClient);
+                this.disconnect(idClient);
             });
         });
     }
 
-    disconnect(hostClient) {
-        if (!clients.hasOwnProperty(hostClient)) {
-            console.log(`Client ${hostClient} is not connected!`);
+    disconnect(idClient) {
+        if (!this.clients.hasOwnProperty(idClient)) {
+            console.log(`Client ${idClient} is not connected!`);
             return;
         }
 
-        delete this.clients[hostClient];
+        console.log(`Disconnect client ${idClient}`);
+
+        delete this.clients[idClient];
     }
 
     sendAll(data) {
-        for (const hostClient of Object.keys(this.clients)) {
-            this.send(hostClient, data);
+        for (const idClient of Object.keys(this.clients)) {
+            this.send(idClient, data);
         }
     }
 
-    send(hostClient, data) {
+    send(idClient, data) {
         const {clients} = this;
 
-        if (!clients.hasOwnProperty(hostClient)) {
-            console.log(`Client ${hostClient} is not connected!`);
+        if (!clients.hasOwnProperty(idClient)) {
+            console.log(`Client ${idClient} is not connected!`);
             return;
         }
 
-        clients[hostClient].send(data);
+        clients[idClient].send(Buffer.from(data));
     }
 }

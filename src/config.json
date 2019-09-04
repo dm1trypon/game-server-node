@@ -3,7 +3,8 @@
         "port": 44444
     },
     "gameEngine": {
-        "fps": 17
+        "fps": 17,
+        "numberBufEffects": 10
     },
     "gameSettings": {
         "objects": {

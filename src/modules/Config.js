@@ -28,7 +28,8 @@ module.exports = class Config {
             process.exit(-1);
         }
         
-        console.log(this.config);
+        console.log('CONFIG:');
+        console.log(JSON.stringify(this.config, null, ' '));
     }
 
     getConfig() {

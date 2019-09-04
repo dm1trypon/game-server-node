@@ -41,10 +41,15 @@ module.exports = class Loop {
                 break;
             }
 
-            this.core.onLoopEvent(type, bufEffect);
+            new Promise(() => {
+                this.core.onLoopEvent(type, bufEffect);
+            })
         }
 
-        setTimeout(() => process.nextTick(() => this.start(interval, type, bufEffect)), interval);
+        new Promise(() => {
+            setTimeout(() => process.nextTick(() => this.start(interval, type, bufEffect)), interval);
+        });
+        
     }
 }
 

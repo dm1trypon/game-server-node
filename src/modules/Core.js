@@ -1,13 +1,36 @@
 const Config = require('./Config');
 const Loop = require('./Loop');
 const {GAME_OBJECTS, MAX_ID} = require('./consts');
+const {getRandomNumber} = require('./randomizer');
 
 module.exports = class Core {
     constructor(events, gameObjects) {
         this.events = events;
         this.gameObjects = gameObjects;
         this.config = Config.getInstance().getConfig();
+        this.defaultWeapon = '';
         this.loop = null;
+
+        this.setDefaultWeapon();
+    }
+
+    setDefaultWeapon() {
+        const {gameSettings: {objects: {bullets}}} = this.config;
+
+        for (const bulletsName of Object.keys(bullets)) {
+            if (!bullets[bulletsName].default) {
+                continue;
+            }
+
+            this.defaultWeapon = bulletsName;
+        }
+
+        if (!this.defaultWeapon.length) {
+            console.log(`Error initialisate default weapon from config`);
+            process.exit(-1);
+        }
+
+        console.log(`Default weapon is ${this.defaultWeapon}`);
     }
 
     startLoop() {
@@ -28,20 +51,22 @@ module.exports = class Core {
         }
     }
 
-    createPlayer(nickname, players) {
+    createPlayer(dataObj, players) {
+        const {nickname, idClient} = dataObj;
         const {gameSettings: {objects: {scene: {size: sizeScene}, players: {size: sizePlayers, speed}}}} = this.config;
 
         const newPlayerObj = {
             nickname,
-            id: this.getRandomNumber(0, MAX_ID),
-            posX: this.getRandomNumber(0, sizeScene.width),
-            posY: this.getRandomNumber(0, sizeScene.height),
+            idClient,
+            weapon: this.defaultWeapon,
+            posX: getRandomNumber(0, sizeScene.width),
+            posY: getRandomNumber(0, sizeScene.height),
             width: sizePlayers.width,
             height: sizePlayers.height,
             speedX: 0,
             speedY: 0,
             speed,
-        }
+        };
 
         players.push(newPlayerObj);
 
@@ -49,16 +74,21 @@ module.exports = class Core {
     }
 
     createBufEffect(bufEffect) {
-        const {gameSettings: {objects: {scene: {size: sizeScene}, bufEffects}}} = this.config;
+        const {gameEngine: {numberBufEffects}, gameSettings: {objects: {scene: {size: sizeScene}, bufEffects}}} = this.config;
         const {size: sizeBuf} = bufEffects[bufEffect];
 
         let bufEffectsArray = this.gameObjects.getGameObject('bufEffects');
 
+        if (bufEffectsArray.length > numberBufEffects) {
+            console.log(`Limit of bufEffects objects exceeded, max: ${numberBufEffects}`);
+            return;
+        }
+
         let newBufEffect = {
             bufEffect,
-            id: this.getRandomNumber(0, MAX_ID),
-            posX: this.getRandomNumber(0, sizeScene.width),
-            posY: this.getRandomNumber(0, sizeScene.height),
+            id: getRandomNumber(0, MAX_ID),
+            posX: getRandomNumber(0, sizeScene.width),
+            posY: getRandomNumber(0, sizeScene.height),
             width: sizeBuf.width,
             height: sizeBuf.height,
         }
@@ -66,12 +96,12 @@ module.exports = class Core {
         switch (bufEffect) {
             case 'medicine':
                 const {health} = bufEffects[bufEffect];
-                newBufEffect.health = this.getRandomNumber(health[0], health[1]);
+                newBufEffect.health = getRandomNumber(health[0], health[1]);
                 break;
 
             case 'boostSpeed':
                 const {speed} = bufEffects[bufEffect];
-                newBufEffect.speed = this.getRandomNumber(speed[0], speed[1]);
+                newBufEffect.speed = getRandomNumber(speed[0], speed[1]);
                 break;
 
             case 'boostRate':
@@ -119,6 +149,96 @@ module.exports = class Core {
         }
     }
 
+    onMouse(dataObj) {
+        const {nickname, isClicked} = dataObj;
+
+        const players = this.gameObjects.getGameObject('players');
+
+        let playerPosX, playerPosY, isExistPlayer = false;
+
+        for (const player of players) {
+            if (nickname !== player.nickname) {
+                continue;
+            }
+
+            playerPosX = player.posX;
+            playerPosY = player.posY;
+            isExistPlayer = true;
+        }
+
+        if (!isExistPlayer) {
+            console.log(`Player ${nickname} is not exist`);
+            return;
+        }
+
+        if (isClicked) {
+            this.createBullet(Object.assign({playerPosX, playerPosY}, dataObj));
+        }
+    }
+
+    getSpeedXY(dataObj) {
+        const {bulletSize, clickPosX, clickPosY, bulletSpeed} = dataObj;
+
+        let {playerPosX, playerPosY} = dataObj;
+
+        playerPosX += bulletSize.width / 2;
+        playerPosY += bulletSize.height / 2;
+
+        const speedX = ((clickPosX - playerPosX) * bulletSpeed
+                / Math.sqrt(Math.pow(clickPosX - playerPosX, 2) + Math.pow(clickPosY - playerPosY, 2)));
+
+        const speedY = ((clickPosY - playerPosY) * bulletSpeed
+                / Math.sqrt(Math.pow(clickPosX - playerPosX, 2) + Math.pow(clickPosY - playerPosY, 2)));
+
+        return {speedX, speedY};
+    }
+
+    createBullet(dataObj) {
+        const {nickname, clickPosX, clickPosY, playerPosX, playerPosY} = dataObj;
+        const {gameSettings: {objects: {bullets}}} = this.config;
+        const {speed, size, damage} = bullets[this.defaultWeapon];
+
+        let bulletsArray = this.gameObjects.getGameObject('bullets');
+
+        const {speedX, speedY} = this.getSpeedXY({playerPosX, playerPosY, bulletSize: size, clickPosX, clickPosY, bulletSpeed: speed});
+
+        const newBulletObj = {
+            weapon: this.defaultWeapon,
+            nickname,
+            idBullet: getRandomNumber(0, MAX_ID),
+            posX: playerPosX,
+            posY: playerPosY,
+            width: size.width,
+            height: size.height,
+            speedX,
+            speedY,
+            speed,
+            damage,
+        }
+
+        bulletsArray.push(newBulletObj);
+
+        this.gameObjects.setGameObject('bullets', bulletsArray);
+    }
+
+    onCloseConnection(idClient) {
+        let playersArray = this.gameObjects.getGameObject('players');
+
+        for (const player of playersArray) {
+            if (player.idClient !== idClient) {
+                continue;
+            }
+
+            this.deletePlayer(playersArray.indexOf(player), playersArray);
+        }
+    }
+
+    deletePlayer(indexPlayer, playersArray) {
+        playersArray.splice(indexPlayer, 1);
+
+        this.gameObjects.setGameObject('players', playersArray);
+    }
+
     onNextFrame() {
         this.process();
 
@@ -131,21 +251,21 @@ module.exports = class Core {
     }
 
     isVerify(dataObj) {
-        const {nickname, hostClient} = dataObj;
+        const {nickname} = dataObj;
 
         let players = this.gameObjects.getGameObject('players');
 
         for (const player of players) {
-            const {host, nickname} = player;
-
-            if (host !== hostClient && nickname !== nickname) {
+            if (nickname !== player.nickname) {
                 continue;
             }
+
+            console.log(`Player already exist, nickname: ${nickname}`);
 
             return false;
         }
 
-        this.createPlayer(nickname, players);
+        this.createPlayer(dataObj, players);
 
         return true;
     }
@@ -237,9 +357,5 @@ module.exports = class Core {
         }
 
         this.gameObjects.setGameObject('players', players);
-    }
-
-    getRandomNumber(min, max) {
-        return Math.floor(Math.random() * (max - min)) + min;
     }
 }
