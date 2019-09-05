@@ -39,7 +39,7 @@ module.exports = class Core {
     startLoop() {
         this.loop = new Loop(this);
         this.collisionObjects = new CollisionObjects();
-        this.physics = new Physics();
+        this.physics = new Physics(this.defaultWeapon);
     }
     
     onLoopEvent(type, bufEffect) {
@@ -72,6 +72,7 @@ module.exports = class Core {
             speedX: 0,
             speedY: 0,
             speed,
+            score: 0,
         };
 
         console.log(newPlayerObj);

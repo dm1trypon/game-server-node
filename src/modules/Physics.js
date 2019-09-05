@@ -1,6 +1,9 @@
-module.exports = class Physics {
-    constructor() {
+const Config = require('./Config');
 
+module.exports = class Physics {
+    constructor(defaultWeapon) {
+        this.config = Config.getInstance().getConfig();
+        this.defaultWeapon = defaultWeapon;
     }
 
     process(collisionObjects, gameObjects) {
@@ -38,6 +41,8 @@ module.exports = class Physics {
     }
 
     onPlayerBulletCollision(colObject, gameObjects) {
+        const {gameSettings: {objects: {scene: {size: sizeScene}, players: {speed, health}}}} = this.config;
+
         let {bullets, players} = gameObjects;
 
         const bullet = colObject.objectTwo;
@@ -47,21 +52,29 @@ module.exports = class Physics {
         
         if (indexPlayer === -1) {
             console.log(`Player is not exists!`);
-            return;
+            return gameObjects;
         }
 
         const indexBullet = bullets.indexOf(bullet);
 
         if (indexBullet === -1) {
             console.log(`Buf effect is not exists!`);
-            return;
+            return gameObjects;
+        }
+
+        if (bullet.nickname === player.nickname) {
+            return gameObjects;
         }
 
         players[indexPlayer].health -= bullets[indexBullet].damage;
         bullets[indexBullet].damage -= players[indexPlayer].health;
 
         if (players[indexPlayer].health < 1) {
-            players.splice(indexPlayer, 1);
+            players[indexPlayer].health = health;
+            players[indexPlayer].speed = speed;
+            players[indexPlayer].weapon = this.defaultWeapon;
+            players[indexPlayer].posX = getRandomNumber(0, sizeScene.width);
+            players[indexPlayer].posY = getRandomNumber(0, sizeScene.height);
         }
 
         if (bullets[indexBullet].damage < 1) {
@@ -75,7 +88,7 @@ module.exports = class Physics {
     }
 
     onPlayerBufEffectCollision(colObject, gameObjects) {
-        let {bufEffects} = gameObjects;
+        let {bufEffects, players} = gameObjects;
 
         const bufEffect = colObject.objectTwo;
         const indexBufEffect = bufEffects.indexOf(bufEffect);
