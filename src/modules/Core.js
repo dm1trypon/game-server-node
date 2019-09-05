@@ -1,5 +1,7 @@
 const Config = require('./Config');
 const Loop = require('./Loop');
+const CollisionObjects = require('./CollisionObjects');
+const Physics = require('./Physics');
 const {GAME_OBJECTS, MAX_ID} = require('./consts');
 const {getRandomNumber} = require('./randomizer');
 
@@ -10,6 +12,7 @@ module.exports = class Core {
         this.config = Config.getInstance().getConfig();
         this.defaultWeapon = '';
         this.loop = null;
+        this.collisionObjects = null;
 
         this.setDefaultWeapon();
     }
@@ -35,6 +38,8 @@ module.exports = class Core {
 
     startLoop() {
         this.loop = new Loop(this);
+        this.collisionObjects = new CollisionObjects();
+        this.physics = new Physics();
     }
     
     onLoopEvent(type, bufEffect) {
@@ -53,11 +58,12 @@ module.exports = class Core {
 
     createPlayer(dataObj, players) {
         const {nickname, idClient} = dataObj;
-        const {gameSettings: {objects: {scene: {size: sizeScene}, players: {size: sizePlayers, speed}}}} = this.config;
+        const {gameSettings: {objects: {scene: {size: sizeScene}, players: {size: sizePlayers, speed, health}}}} = this.config;
 
         const newPlayerObj = {
             nickname,
             idClient,
+            health,
             weapon: this.defaultWeapon,
             posX: getRandomNumber(0, sizeScene.width),
             posY: getRandomNumber(0, sizeScene.height),
@@ -67,6 +73,8 @@ module.exports = class Core {
             speedY: 0,
             speed,
         };
+
+        console.log(newPlayerObj);
 
         players.push(newPlayerObj);
 
@@ -143,9 +151,29 @@ module.exports = class Core {
         this.gameObjects.setGameObject(nameObject, objects);
     }
 
+    checkCollisions() {
+        const players = this.gameObjects.getGameObject('players');
+        const bullets = this.gameObjects.getGameObject('bullets');
+        const walls = this.gameObjects.getGameObject('walls');
+        const bufEffects = this.gameObjects.getGameObject('bufEffects');
+
+        const collisionObjectsArr = this.collisionObjects.getCollisionObjects({players, bullets, walls, bufEffects});
+
+        if (!collisionObjectsArr.length) {
+            return;
+        }
+
+        const newGameObjects = this.physics.process(collisionObjectsArr, {players, bullets, walls, bufEffects});
+        
+        for (const key of Object.keys(newGameObjects)) {
+            this.gameObjects.setGameObject(key, newGameObjects[key]);
+        }
+    }
+
     process() {
         for (const object of GAME_OBJECTS) {
             this.setPositionObjects(object);
+            this.checkCollisions(object);
         }
     }
 

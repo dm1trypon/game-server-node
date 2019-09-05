@@ -19,7 +19,8 @@
                     "width": 50,
                     "height": 50
                 },
-                "speed": 7
+                "speed": 7,
+                "health": 100
             },
             "bullets": {
                 "plazma": {
