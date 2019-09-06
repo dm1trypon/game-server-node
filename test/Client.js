@@ -43,12 +43,12 @@ module.exports = class Client {
             }
 
             this.tick = 0;
-        }, 2000);
+        }, 3000);
 
-        setInterval(() => {
-            this.methods[8].nickname = nickname;
-            connection.sendUTF(JSON.stringify(this.methods[8]));
-        }, 1000);
+        // setInterval(() => {
+        //     this.methods[8].nickname = nickname;
+        //     connection.sendUTF(JSON.stringify(this.methods[8]));
+        // }, 1000);
     }
 
     connect(host, port) {

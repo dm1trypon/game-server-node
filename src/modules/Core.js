@@ -39,9 +39,38 @@ module.exports = class Core {
     startLoop() {
         this.loop = new Loop(this);
         this.collisionObjects = new CollisionObjects();
-        this.physics = new Physics(this.defaultWeapon);
+        this.physics = new Physics(this);
     }
     
+    onTimeoutBufEffects(nickname, bufEffect) {
+        console.log(`onTimeoutBufEffects(${nickname}, ${bufEffect})`);
+        let players = this.gameObjects.getGameObject('players');
+
+        for (let player of players) {
+            if (player.nickname !== nickname) {
+                continue;
+            }
+
+            for (const playerBufEffect of player.actingBufEffects) {
+                if (playerBufEffect.name !== bufEffect) {
+                    continue;
+                }
+
+                const indexBufEffect = player.actingBufEffects.indexOf(playerBufEffect);
+
+                player.actingBufEffects.splice(indexBufEffect, 1);
+
+                break;
+            }
+
+            break;
+        }
+
+        console.log(`Delete buf effect (${nickname}, ${bufEffect})`);
+
+        this.gameObjects.setGameObject('players', players);
+    }
+
     onLoopEvent(type, bufEffect) {
         switch (type) {
             case 'fps':
@@ -58,7 +87,17 @@ module.exports = class Core {
 
     createPlayer(dataObj, players) {
         const {nickname, idClient} = dataObj;
-        const {gameSettings: {objects: {scene: {size: sizeScene}, players: {size: sizePlayers, speed, health}}}} = this.config;
+        const {gameSettings: {objects: {scene: {size: sizeScene}, players: {size: sizePlayers, speed, health}, bullets}}} = this.config;
+
+        const {rate: rateFire} = bullets[this.defaultWeapon];
+        
+        let weaponNumberBullet = {};
+
+        for (const key of Object.keys(bullets)) {
+            weaponNumberBullet[key] = 0;
+        }
+
+        const actingBufEffects = [];
 
         const newPlayerObj = {
             nickname,
@@ -72,6 +111,9 @@ module.exports = class Core {
             speedX: 0,
             speedY: 0,
             speed,
+            rateFire,
+            weaponNumberBullet,
+            actingBufEffects,
             score: 0,
         };
 
@@ -84,7 +126,7 @@ module.exports = class Core {
 
     createBufEffect(bufEffect) {
         const {gameEngine: {numberBufEffects}, gameSettings: {objects: {scene: {size: sizeScene}, bufEffects}}} = this.config;
-        const {size: sizeBuf} = bufEffects[bufEffect];
+        const {size: sizeBuf, time} = bufEffects[bufEffect];
 
         let bufEffectsArray = this.gameObjects.getGameObject('bufEffects');
 
@@ -110,25 +152,38 @@ module.exports = class Core {
 
             case 'boostSpeed':
                 const {speed} = bufEffects[bufEffect];
+                newBufEffect.time = time;
                 newBufEffect.speed = getRandomNumber(speed[0], speed[1]);
                 break;
 
             case 'boostRate':
+                const {rate} = bufEffects[bufEffect];
+                newBufEffect.time = time;
+                newBufEffect.rate = getRandomNumber(rate[0], rate[1]);
                 break;
 
             case 'doubleDamage':
+                newBufEffect.time = time;
                 break;
 
             case 'cartridgeBlaster':
+                const {numberBullets: cb} = bufEffects[bufEffect];
+                newBufEffect.numberBullets = getRandomNumber(cb[0], cb[1]);
                 break;
 
             case 'cartridgePlazma':
+            const {numberBullets: cp} = bufEffects[bufEffect];
+                newBufEffect.numberBullets = getRandomNumber(cp[0], cp[1]);
                 break;
 
             case 'cartridgeMiniGun':
+                const {numberBullets: cmg} = bufEffects[bufEffect];
+                newBufEffect.numberBullets = getRandomNumber(cmg[0], cmg[1]);
                 break;
 
             case 'cartridgeShotGun':
+                const {numberBullets: csg} = bufEffects[bufEffect];
+                newBufEffect.numberBullets = getRandomNumber(csg[0], csg[1]);
                 break;
 
             default:
@@ -259,6 +314,8 @@ module.exports = class Core {
             }
 
             this.deletePlayer(playersArray.indexOf(player), playersArray);
+
+            break;
         }
     }
 

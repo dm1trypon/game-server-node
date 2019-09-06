@@ -1,7 +1,9 @@
 const Config = require('./Config');
 
 module.exports = class Physics {
-    constructor(defaultWeapon) {
+    constructor(core) {
+        const {defaultWeapon} = core;
+        this.core = core;
         this.config = Config.getInstance().getConfig();
         this.defaultWeapon = defaultWeapon;
     }
@@ -91,6 +93,8 @@ module.exports = class Physics {
         let {bufEffects, players} = gameObjects;
 
         const bufEffect = colObject.objectTwo;
+        const player = colObject.objectOne;
+
         const indexBufEffect = bufEffects.indexOf(bufEffect);
 
         if (indexBufEffect === -1) {
@@ -98,8 +102,110 @@ module.exports = class Physics {
             return;
         }
 
+        const indexPlayer = players.indexOf(player);
+        
+        if (indexPlayer === -1) {
+            console.log(`Player is not exists!`);
+            return gameObjects;
+        }
+
+        const typeBufEffect = bufEffects[indexBufEffect].bufEffect;
+
+        switch (typeBufEffect) {
+            case 'medicine':
+                players[indexPlayer].health += bufEffects[indexBufEffect].health;
+                break;
+
+            case 'boostSpeed':
+                const indexBootSpeed = players[indexPlayer].actingBufEffects.indexOf(typeBufEffect);
+
+                if (indexBootSpeed !== -1) {
+                    players[indexPlayer].actingBufEffects.splice(indexBootSpeed, 1);
+                }
+
+                players[indexPlayer].actingBufEffects.push(
+                    {
+                        name: typeBufEffect,
+                        speed: bufEffects[indexBufEffect].speed,
+                    }
+                );
+
+                console.log(`Set timeout for bufEffect ${typeBufEffect} at ${bufEffects[indexBufEffect].time} ms`);
+
+                try {
+                    setTimeout(() => {this.core.onTimeoutBufEffects(players[indexPlayer].nickname, typeBufEffect)}, bufEffects[indexBufEffect].time * 1000);
+                } catch (err) {
+                    console.log(`Player is disconnected, stop timer!`);
+                }
+
+                break;
+
+            case 'boostRate':
+                const indexBoostRate = players[indexPlayer].actingBufEffects.indexOf(typeBufEffect);
+
+                if (indexBoostRate !== -1) {
+                    players[indexPlayer].actingBufEffects.splice(indexBoostRate, 1);
+                }
+
+                players[indexPlayer].actingBufEffects.push(
+                    {
+                        name: typeBufEffect,
+                        rate: bufEffects[indexBufEffect].rate,
+                    }
+                );
+
+                console.log(`Set timeout for bufEffect ${typeBufEffect} at ${bufEffects[indexBufEffect].time} ms`);
+
+                try {
+                    setTimeout(() => {this.core.onTimeoutBufEffects(players[indexPlayer].nickname, typeBufEffect)}, bufEffects[indexBufEffect].time * 1000);
+                } catch (err) {
+                    console.log(`Player is disconnected, stop timer!`);
+                }
+
+                break;
+
+            case 'doubleDamage':
+                const indexDoubleDamage = players[indexPlayer].actingBufEffects.indexOf(typeBufEffect);
+
+                if (indexDoubleDamage !== -1) {
+                    players[indexPlayer].actingBufEffects.splice(indexDoubleDamage, 1);
+                }
+
+                players[indexPlayer].actingBufEffects.push({name: typeBufEffect});
+
+                console.log(`Set timeout for bufEffect ${typeBufEffect} at ${bufEffects[indexBufEffect].time} ms`);
+
+                try {
+                    setTimeout(() => {this.core.onTimeoutBufEffects(players[indexPlayer].nickname, typeBufEffect)}, bufEffects[indexBufEffect].time * 1000);
+                } catch (err) {
+                    console.log(`Player is disconnected, stop timer!`);
+                }
+
+                break;
+
+            case 'cartridgeBlaster':
+                players[indexPlayer].weaponNumberBullet['blaster'] = bufEffects[indexBufEffect].numberBullets;
+                break;
+
+            case 'cartridgePlazma':
+                players[indexPlayer].weaponNumberBullet['plazma'] = bufEffects[indexBufEffect].numberBullets;
+                break;
+
+            case 'cartridgeMiniGun':
+                players[indexPlayer].weaponNumberBullet['miniGun'] = bufEffects[indexBufEffect].numberBullets;
+                break;
+
+            case 'cartridgeShotGun':
+                players[indexPlayer].weaponNumberBullet['shotGun'] = bufEffects[indexBufEffect].numberBullets;
+                break;
+
+            default:
+                break;
+        }
+
         bufEffects.splice(indexBufEffect, 1);
         gameObjects.bufEffects = bufEffects;
+        gameObjects.players = players;
         
         return gameObjects;
     }
