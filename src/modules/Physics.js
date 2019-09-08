@@ -6,6 +6,7 @@ module.exports = class Physics {
         this.core = core;
         this.config = Config.getInstance().getConfig();
         this.defaultWeapon = defaultWeapon;
+        this.timers = [];
     }
 
     process(collisionObjects, gameObjects) {
@@ -39,6 +40,21 @@ module.exports = class Physics {
 
             default:
                 break;
+        }
+    }
+
+    onPlayersCollision(colObject, gameObjects) {
+        const {gameSettings: {objects: {scene: {size: sizeScene}, players: {speed, health}}}} = this.config;
+
+        let {player} = gameObjects;
+
+        const player = colObject.objectOne;
+
+        const indexPlayer = players.indexOf(player);
+        
+        if (indexPlayer === -1) {
+            console.log(`Player is not exists!`);
+            return gameObjects;
         }
     }
 
@@ -110,6 +126,8 @@ module.exports = class Physics {
         }
 
         const typeBufEffect = bufEffects[indexBufEffect].bufEffect;
+        const nickname = players[indexPlayer].nickname;
+        const time = bufEffects[indexBufEffect].time * 1000;
 
         switch (typeBufEffect) {
             case 'medicine':
@@ -131,12 +149,8 @@ module.exports = class Physics {
                 );
 
                 console.log(`Set timeout for bufEffect ${typeBufEffect} at ${bufEffects[indexBufEffect].time} ms`);
-
-                try {
-                    setTimeout(() => {this.core.onTimeoutBufEffects(players[indexPlayer].nickname, typeBufEffect)}, bufEffects[indexBufEffect].time * 1000);
-                } catch (err) {
-                    console.log(`Player is disconnected, stop timer!`);
-                }
+                
+                this.startBufEffectTimer(typeBufEffect, nickname, time);
 
                 break;
 
@@ -156,11 +170,7 @@ module.exports = class Physics {
 
                 console.log(`Set timeout for bufEffect ${typeBufEffect} at ${bufEffects[indexBufEffect].time} ms`);
 
-                try {
-                    setTimeout(() => {this.core.onTimeoutBufEffects(players[indexPlayer].nickname, typeBufEffect)}, bufEffects[indexBufEffect].time * 1000);
-                } catch (err) {
-                    console.log(`Player is disconnected, stop timer!`);
-                }
+                this.startBufEffectTimer(typeBufEffect, nickname, time);
 
                 break;
 
@@ -175,11 +185,7 @@ module.exports = class Physics {
 
                 console.log(`Set timeout for bufEffect ${typeBufEffect} at ${bufEffects[indexBufEffect].time} ms`);
 
-                try {
-                    setTimeout(() => {this.core.onTimeoutBufEffects(players[indexPlayer].nickname, typeBufEffect)}, bufEffects[indexBufEffect].time * 1000);
-                } catch (err) {
-                    console.log(`Player is disconnected, stop timer!`);
-                }
+                this.startBufEffectTimer(typeBufEffect, nickname, time);
 
                 break;
 
@@ -208,5 +214,44 @@ module.exports = class Physics {
         gameObjects.players = players;
         
         return gameObjects;
+    }
+
+    initTimer(nickname) {
+        this.timers[nickname] = [];
+    }
+
+    startBufEffectTimer(typeBufEffect, nickname, time) {
+        try {
+            if (!this.timers.hasOwnProperty(nickname)) {
+                this.timers[nickname] = [];
+            }
+
+            for (const timerObj of this.timers[nickname]) {
+                if (timerObj.bufEffect !== typeBufEffect) {
+                    continue;
+                }
+
+                clearTimeout(timerObj.timer);
+
+                const indexTimer = this.timers[nickname].indexOf(timerObj);
+
+                this.timers[nickname].splice(indexTimer, 1);
+
+                break;
+            }
+
+            const timer = setTimeout(() => {this.core.onTimeoutBufEffects(nickname, typeBufEffect)}, time);
+            this.timers[nickname].push({typeBufEffect, timer});
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    stopAllBufEffectsTimers(nickname) {
+        for (const timerObj of this.timers[nickname]) {
+            clearTimeout(timerObj.timer);
+        }
+
+        delete this.timers[nickname];
     }
 }

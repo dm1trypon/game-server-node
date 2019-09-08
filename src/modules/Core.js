@@ -122,6 +122,7 @@ module.exports = class Core {
         players.push(newPlayerObj);
 
         this.gameObjects.setGameObject('players', players);
+        this.physics.initTimer(nickname);
     }
 
     createBufEffect(bufEffect) {
@@ -313,6 +314,7 @@ module.exports = class Core {
                 continue;
             }
 
+            this.physics.stopAllBufEffectsTimers(player.nickname);
             this.deletePlayer(playersArray.indexOf(player), playersArray);
 
             break;
