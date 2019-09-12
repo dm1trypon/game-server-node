@@ -9,7 +9,7 @@ module.exports = class CollisionObjects {
         let collisionObjectsArr = [];
 
         for (const player of players) {
-            const {idClient: idClientOne, nickname: nicknameOne, posX: posOneX, posY: posOneY, width: wOne, height: hOne} = player;
+            const {posX: posOneX, posY: posOneY, width: wOne, height: hOne} = player;
 
             for (const anotherPlayer of players) {
                 if (anotherPlayer === player) {
@@ -18,37 +18,41 @@ module.exports = class CollisionObjects {
 
                 const {posX: posTwoX, posY: posTwoY, width: wTwo, height: hTwo} = anotherPlayer;
 
-                if (this.isCollision({posOneX, posOneY, wOne, hOne}, {posTwoX, posTwoY, wTwo, hTwo})) {
-                    collisionObjectsArr.push({nameOne: 'player', objectOne: player, nameTwo: 'player', objectTwo: anotherPlayer});
-                    // console.log(`Collision player[${idClientOne}][${nicknameOne}][${posOneX}][${posOneY}] to player[${idClientOne}][${nicknameOne}][${posTwoX}][${posTwoY}]!`);
+                if (!this.isCollision({posOneX, posOneY, wOne, hOne}, {posTwoX, posTwoY, wTwo, hTwo})) {
+                    continue;
                 }
+
+                collisionObjectsArr.push({nameOne: 'player', objectOne: player, nameTwo: 'player', objectTwo: anotherPlayer});
             }
 
             for (const bullet of bullets) {
-                const {idBullet, nickname: nicknameTwo, posX: posTwoX, posY: posTwoY, width: wTwo, height: hTwo} = bullet;
+                const {posX: posTwoX, posY: posTwoY, width: wTwo, height: hTwo} = bullet;
 
-                if (this.isCollision({posOneX, posOneY, wOne, hOne}, {posTwoX, posTwoY, wTwo, hTwo})) {
-                    collisionObjectsArr.push({nameOne: 'player', objectOne: player, nameTwo: 'bullet', objectTwo: bullet});
-                    // console.log(`Collision player[${idClientOne}][${nicknameOne}][${posOneX}][${posOneY}] to bullet[${idBullet}][${nicknameTwo}][${posTwoX}][${posTwoY}]!`);
+                if (!this.isCollision({posOneX, posOneY, wOne, hOne}, {posTwoX, posTwoY, wTwo, hTwo})) {
+                    continue;
                 }
+
+                collisionObjectsArr.push({nameOne: 'player', objectOne: player, nameTwo: 'bullet', objectTwo: bullet});
             }
 
             for (const wall of walls) {
                 const {posX: posTwoX, posY: posTwoY, width: wTwo, height: hTwo} = wall;
 
-                if (this.isCollision({posOneX, posOneY, wOne, hOne}, {posTwoX, posTwoY, wTwo, hTwo})) {
-                    collisionObjectsArr.push({nameOne: 'player', objectOne: player, nameTwo: 'wall', objectTwo: wall});
-                    // console.log(`Collision player[${idClientOne}][${nicknameOne}][${posOneX}][${posOneY}] to wall[${posTwoX}][${posTwoY}]!`);
+                if (!this.isCollision({posOneX, posOneY, wOne, hOne}, {posTwoX, posTwoY, wTwo, hTwo})) {
+                    continue;
                 }
+
+                collisionObjectsArr.push({nameOne: 'player', objectOne: player, nameTwo: 'wall', objectTwo: wall});
             }
 
             for (const bufEffect of bufEffects) {
-                const {id, bufEffect: name, posX: posTwoX, posY: posTwoY, width: wTwo, height: hTwo} = bufEffect;
+                const {posX: posTwoX, posY: posTwoY, width: wTwo, height: hTwo} = bufEffect;
 
-                if (this.isCollision({posOneX, posOneY, wOne, hOne}, {posTwoX, posTwoY, wTwo, hTwo})) {
-                    collisionObjectsArr.push({nameOne: 'player', objectOne: player, nameTwo: 'bufEffect', objectTwo: bufEffect});
-                    // console.log(`Collision player[${idClientOne}][${nicknameOne}][${posOneX}][${posOneY}] to bufEffect[${id}][${name}][${posTwoX}][${posTwoY}]!`);
+                if (!this.isCollision({posOneX, posOneY, wOne, hOne}, {posTwoX, posTwoY, wTwo, hTwo})) {
+                    continue;
                 }
+
+                collisionObjectsArr.push({nameOne: 'player', objectOne: player, nameTwo: 'bufEffect', objectTwo: bufEffect});
             }
         }
 

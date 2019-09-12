@@ -49,7 +49,6 @@ module.exports = class Loop {
         new Promise(() => {
             setTimeout(() => process.nextTick(() => this.start(interval, type, bufEffect)), interval);
         });
-        
     }
 }
 

@@ -21,11 +21,10 @@ module.exports = class Core {
         const {gameSettings: {objects: {bullets}}} = this.config;
 
         for (const bulletsName of Object.keys(bullets)) {
-            if (!bullets[bulletsName].default) {
-                continue;
+            if (bullets[bulletsName].default) {
+                this.defaultWeapon = bulletsName;
+                break;
             }
-
-            this.defaultWeapon = bulletsName;
         }
 
         if (!this.defaultWeapon.length) {
@@ -85,13 +84,39 @@ module.exports = class Core {
         }
     }
 
+    createBullet(dataObj) {
+        const {nickname, clickPosX, clickPosY, playerPosX, playerPosY} = dataObj;
+        const {gameSettings: {objects: {bullets}}} = this.config;
+        const {speed, size, damage} = bullets[this.defaultWeapon];
+
+        let bulletsArray = this.gameObjects.getGameObject('bullets');
+
+        const {speedX, speedY} = this.getSpeedXY({playerPosX, playerPosY, bulletSize: size, clickPosX, clickPosY, bulletSpeed: speed});
+
+        const newBulletObj = {
+            weapon: this.defaultWeapon,
+            nickname,
+            idBullet: getRandomNumber(0, MAX_ID),
+            posX: playerPosX,
+            posY: playerPosY,
+            width: size.width,
+            height: size.height,
+            speedX,
+            speedY,
+            speed,
+            damage,
+        }
+
+        bulletsArray.push(newBulletObj);
+
+        this.gameObjects.setGameObject('bullets', bulletsArray);
+    }
+
     createPlayer(dataObj, players) {
         const {nickname, idClient} = dataObj;
         const {gameSettings: {objects: {scene: {size: sizeScene}, players: {size: sizePlayers, speed, health}, bullets}}} = this.config;
-
         const {rate: rateFire} = bullets[this.defaultWeapon];
-        
-        let weaponNumberBullet = {};
+        const weaponNumberBullet = {};
 
         for (const key of Object.keys(bullets)) {
             weaponNumberBullet[key] = 0;
@@ -111,15 +136,16 @@ module.exports = class Core {
             speedX: 0,
             speedY: 0,
             speed,
+            currentSpeed: 0,
             rateFire,
             weaponNumberBullet,
             actingBufEffects,
             score: 0,
         };
 
-        console.log(newPlayerObj);
-
         players.push(newPlayerObj);
+
+        console.log(`Creating new player: ${JSON.stringify(newPlayerObj)}`);
 
         this.gameObjects.setGameObject('players', players);
         this.physics.initTimer(nickname);
@@ -173,7 +199,7 @@ module.exports = class Core {
                 break;
 
             case 'cartridgePlazma':
-            const {numberBullets: cp} = bufEffects[bufEffect];
+                const {numberBullets: cp} = bufEffects[bufEffect];
                 newBufEffect.numberBullets = getRandomNumber(cp[0], cp[1]);
                 break;
 
@@ -198,14 +224,14 @@ module.exports = class Core {
     }
 
     setPositionObjects(nameObject) {
-        let objects = this.gameObjects.getGameObject(nameObject);
+        const objectsArray = this.gameObjects.getGameObject(nameObject);
 
-        for (let object of objects) {
+        for (let object of objectsArray) {
             object.posX += object.speedX;
             object.posY += object.speedY;
         }
 
-        this.gameObjects.setGameObject(nameObject, objects);
+        this.gameObjects.setGameObject(nameObject, objectsArray);
     }
 
     checkCollisions() {
@@ -236,7 +262,6 @@ module.exports = class Core {
 
     onMouse(dataObj) {
         const {nickname, isClicked} = dataObj;
-
         const players = this.gameObjects.getGameObject('players');
 
         let playerPosX, playerPosY, isExistPlayer = false;
@@ -278,44 +303,23 @@ module.exports = class Core {
         return {speedX, speedY};
     }
 
-    createBullet(dataObj) {
-        const {nickname, clickPosX, clickPosY, playerPosX, playerPosY} = dataObj;
-        const {gameSettings: {objects: {bullets}}} = this.config;
-        const {speed, size, damage} = bullets[this.defaultWeapon];
-
-        let bulletsArray = this.gameObjects.getGameObject('bullets');
-
-        const {speedX, speedY} = this.getSpeedXY({playerPosX, playerPosY, bulletSize: size, clickPosX, clickPosY, bulletSpeed: speed});
-
-        const newBulletObj = {
-            weapon: this.defaultWeapon,
-            nickname,
-            idBullet: getRandomNumber(0, MAX_ID),
-            posX: playerPosX,
-            posY: playerPosY,
-            width: size.width,
-            height: size.height,
-            speedX,
-            speedY,
-            speed,
-            damage,
-        }
-
-        bulletsArray.push(newBulletObj);
-
-        this.gameObjects.setGameObject('bullets', bulletsArray);
-    }
-
     onCloseConnection(idClient) {
-        let playersArray = this.gameObjects.getGameObject('players');
+        const playersArray = this.gameObjects.getGameObject('players');
 
         for (const player of playersArray) {
             if (player.idClient !== idClient) {
                 continue;
             }
 
+            const indexPlayer = playersArray.indexOf(player);
+
+            if (indexPlayer === -1) {
+                console.log('Unknown error in deleting player, player is not exist!');
+                return;
+            }
+
             this.physics.stopAllBufEffectsTimers(player.nickname);
-            this.deletePlayer(playersArray.indexOf(player), playersArray);
+            this.deletePlayer(indexPlayer, playersArray);
 
             break;
         }
@@ -340,8 +344,7 @@ module.exports = class Core {
 
     isVerify(dataObj) {
         const {nickname} = dataObj;
-
-        let players = this.gameObjects.getGameObject('players');
+        const players = this.gameObjects.getGameObject('players');
 
         for (const player of players) {
             if (nickname !== player.nickname) {
@@ -380,63 +383,57 @@ module.exports = class Core {
             return;
         }
 
+        const coefSpeedX = players[index].speedX / 10;
+        const coefSpeedY = players[index].speedY / 10;
+
         if (!isHold) {
-            players[index].speedX = 0;
-            players[index].speedY = 0;
+            this.onStopSpeed(players[index].nickname, {coefSpeedX, coefSpeedY});
 
             this.gameObjects.setGameObject('players', players);
 
             return;
         }
 
-        const speed = players[index].speed;
+        players[index].currentSpeed = 0;
 
         switch (key) {
             case 'up':
-                players[index].speedX = 0;
-                players[index].speedY = speed;
+                this.onStartSpeed(players[index].nickname, {coefX: 0, coefY: 1});
 
                 break;
 
             case 'down':
-                players[index].speedX = 0;
-                players[index].speedY = -speed;
+                this.onStartSpeed(players[index].nickname, {coefX: 0, coefY: -1});
 
                 break;
 
             case 'left':
-                players[index].speedX = -speed;
-                players[index].speedY = 0;
+                this.onStartSpeed(players[index].nickname, {coefX: -1, coefY: 0});
 
                 break;
 
             case 'right':
-                players[index].speedX = speed;
-                players[index].speedY = 0;
+                this.onStartSpeed(players[index].nickname, {coefX: 1, coefY: 0});
 
                 break;
 
             case 'up_left':
-                players[index].speedX = -speed * 2 / 3;
-                players[index].speedY = -speed * 2 / 3;
+                this.onStartSpeed(players[index].nickname, {coefX: - 2 / 3, coefY: - 2 / 3});
 
                 break;
 
             case 'up_right':
-                players[index].speedX = speed * 2 / 3;
-                players[index].speedY = -speed * 2 / 3;
+                this.onStartSpeed(players[index].nickname, {coefX: 2 / 3, coefY: - 2 / 3});
 
                 break;
 
             case 'down_left':
-                players[index].speedX = -speed * 2 / 3;
-                players[index].speedY = speed * 2 / 3;
+                this.onStartSpeed(players[index].nickname, {coefX: - 2 / 3, coefY: 2 / 3});
 
                 break;
 
             case 'down_right':
-                players[index].speedX = speed * 2 / 3;
-                players[index].speedY = speed * 2 / 3;
+                this.onStartSpeed(players[index].nickname, {coefX: 2 / 3, coefY: 2 / 3});
 
                 break;
 
@@ -445,5 +442,93 @@ module.exports = class Core {
         }
 
         this.gameObjects.setGameObject('players', players);
+    }
+
+    onStopSpeed(nickname, coefSpeeds) {
+        const {coefSpeedX, coefSpeedY} = coefSpeeds;
+
+        let players = this.gameObjects.getGameObject('players');
+        let indexPlayer = -1;
+
+        for (const playerObj of players) {
+            if (playerObj.nickname !== nickname) {
+                continue;
+            }
+
+            indexPlayer = players.indexOf(playerObj);
+
+            break;
+        }
+
+        if (indexPlayer === -1) {
+            console.log(`Player ${nickname} is not found in game objects!`);
+            return;
+        }
+
+        let coef;
+
+        if (players[indexPlayer].speedX > 0) {
+            coef = -1;
+        } else {
+            coef = 1;
+        }
+
+        players[indexPlayer].speedX += coef * coefSpeedX;
+
+        if (players[indexPlayer].speedY > 0) {
+            coef = -1
+        } else {
+            coef = 1;
+        }
+
+        players[indexPlayer].speedY += coef * coefSpeedY;
+
+        if (players[indexPlayer].speedX < 0 && players[indexPlayer].speedY < 0) {
+            players[indexPlayer].speedX = 0;
+            players[indexPlayer].speedY = 0;
+
+            this.gameObjects.setGameObject('players', players);
+
+            return;
+        }
+
+        this.gameObjects.setGameObject('players', players);
+
+        setTimeout(() => process.nextTick(() => this.onStopSpeed(nickname, coefSpeeds)), 100);
+    }
+
+    onStartSpeed(nickname, coefs) {
+        const {coefX, coefY} = coefs;
+
+        let players = this.gameObjects.getGameObject('players');
+        let indexPlayer = -1;
+
+        for (const playerObj of players) {
+            if (playerObj.nickname !== nickname) {
+                continue;
+            }
+
+            indexPlayer = players.indexOf(playerObj);
+
+            break;
+        }
+
+        if (indexPlayer === -1) {
+            console.log(`Player ${nickname} is not found in game objects!`);
+            return;
+        }
+
+        players[indexPlayer].speedX += coefX;
+        players[indexPlayer].speedY += coefY;
+
+        if (players[indexPlayer].currentSpeed === players[indexPlayer].speed) {
+            return;
+        }
+
+        players[indexPlayer].currentSpeed ++;
+
+        this.gameObjects.setGameObject('players', players);
+
+        setTimeout(() => process.nextTick(() => this.onStartSpeed(nickname, coefs)), 100);
     }
 }

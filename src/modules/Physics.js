@@ -44,18 +44,7 @@ module.exports = class Physics {
     }
 
     onPlayersCollision(colObject, gameObjects) {
-        const {gameSettings: {objects: {scene: {size: sizeScene}, players: {speed, health}}}} = this.config;
 
-        let {player} = gameObjects;
-
-        const player = colObject.objectOne;
-
-        const indexPlayer = players.indexOf(player);
-        
-        if (indexPlayer === -1) {
-            console.log(`Player is not exists!`);
-            return gameObjects;
-        }
     }
 
     onPlayerBulletCollision(colObject, gameObjects) {
