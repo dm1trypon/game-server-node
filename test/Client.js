@@ -43,7 +43,7 @@ module.exports = class Client {
             }
 
             this.tick = 0;
-        }, 3000);
+        }, 5000);
 
         // setInterval(() => {
         //     this.methods[8].nickname = nickname;

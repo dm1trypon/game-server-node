@@ -7,6 +7,7 @@ const {getRandomNumber} = require('./randomizer');
 
 module.exports = class Core {
     constructor(events, gameObjects) {
+        this.timers = [];
         this.events = events;
         this.gameObjects = gameObjects;
         this.config = Config.getInstance().getConfig();
@@ -383,57 +384,58 @@ module.exports = class Core {
             return;
         }
 
-        const coefSpeedX = players[index].speedX / 10;
-        const coefSpeedY = players[index].speedY / 10;
-
-        if (!isHold) {
-            this.onStopSpeed(players[index].nickname, {coefSpeedX, coefSpeedY});
-
-            this.gameObjects.setGameObject('players', players);
-
-            return;
-        }
-
         players[index].currentSpeed = 0;
 
         switch (key) {
             case 'up':
-                this.onStartSpeed(players[index].nickname, {coefX: 0, coefY: 1});
+                if (!isHold) {
+                    return;
+                }
+                
+                this.onStartSpeedX(players[index].nickname, 1);
 
                 break;
 
             case 'down':
-                this.onStartSpeed(players[index].nickname, {coefX: 0, coefY: -1});
+            if (!isHold) {
+                return;
+            }
+        
+                this.onStartSpeedY(players[index].nickname, -1);
 
                 break;
 
             case 'left':
-                this.onStartSpeed(players[index].nickname, {coefX: -1, coefY: 0});
+                this.onStartSpeedX(players[index].nickname, 1);
 
                 break;
 
             case 'right':
-                this.onStartSpeed(players[index].nickname, {coefX: 1, coefY: 0});
+                this.onStartSpeedX(players[index].nickname, -1);
 
                 break;
 
             case 'up_left':
-                this.onStartSpeed(players[index].nickname, {coefX: - 2 / 3, coefY: - 2 / 3});
+                this.onStartSpeedX(players[index].nickname, 1);
+                this.onStartSpeedY(players[index].nickname, 1);
 
                 break;
 
             case 'up_right':
-                this.onStartSpeed(players[index].nickname, {coefX: 2 / 3, coefY: - 2 / 3});
+                this.onStartSpeedX(players[index].nickname, -1);
+                this.onStartSpeedY(players[index].nickname, 1);
 
                 break;
 
             case 'down_left':
-                this.onStartSpeed(players[index].nickname, {coefX: - 2 / 3, coefY: 2 / 3});
+                this.onStartSpeedX(players[index].nickname, 1);
+                this.onStartSpeedY(players[index].nickname, -1);
 
                 break;
 
             case 'down_right':
-                this.onStartSpeed(players[index].nickname, {coefX: 2 / 3, coefY: 2 / 3});
+                this.onStartSpeedX(players[index].nickname, -1);
+                this.onStartSpeedY(players[index].nickname, -1);
 
                 break;
 
@@ -444,9 +446,7 @@ module.exports = class Core {
         this.gameObjects.setGameObject('players', players);
     }
 
-    onStopSpeed(nickname, coefSpeeds) {
-        const {coefSpeedX, coefSpeedY} = coefSpeeds;
-
+    onStartSpeedX(nickname, coefX) {
         let players = this.gameObjects.getGameObject('players');
         let indexPlayer = -1;
 
@@ -465,41 +465,32 @@ module.exports = class Core {
             return;
         }
 
-        let coef;
+        const speed = Math.abs(players[indexPlayer].speed * coefX); // 7 
 
-        if (players[indexPlayer].speedX > 0) {
-            coef = -1;
+        if (Math.abs(players[indexPlayer].speedX + coefX) > speed) { 
+            let newSpeed;
+            
+            if (coefX > 0) {
+                newSpeed = 1;
+            } else {
+                newSpeed = -1;
+            }
+
+            players[indexPlayer].speedX = newSpeed * speed;
         } else {
-            coef = 1;
-        }
-
-        players[indexPlayer].speedX += coef * coefSpeedX;
-
-        if (players[indexPlayer].speedY > 0) {
-            coef = -1
-        } else {
-            coef = 1;
-        }
-
-        players[indexPlayer].speedY += coef * coefSpeedY;
-
-        if (players[indexPlayer].speedX < 0 && players[indexPlayer].speedY < 0) {
-            players[indexPlayer].speedX = 0;
-            players[indexPlayer].speedY = 0;
-
-            this.gameObjects.setGameObject('players', players);
-
-            return;
+            players[indexPlayer].speedX += coefX;
         }
 
         this.gameObjects.setGameObject('players', players);
 
-        setTimeout(() => process.nextTick(() => this.onStopSpeed(nickname, coefSpeeds)), 100);
+        if (Math.abs(players[indexPlayer].speedX) === speed) {
+            return;
+        }
+
+        setTimeout(() => process.nextTick(() => this.onStartSpeedX(nickname, coefX)), 100);
     }
 
-    onStartSpeed(nickname, coefs) {
-        const {coefX, coefY} = coefs;
-
+    onStartSpeedY(nickname, coefY) {
         let players = this.gameObjects.getGameObject('players');
         let indexPlayer = -1;
 
@@ -518,17 +509,28 @@ module.exports = class Core {
             return;
         }
 
-        players[indexPlayer].speedX += coefX;
-        players[indexPlayer].speedY += coefY;
+        const speed = Math.abs(players[indexPlayer].speed * coefY);
 
-        if (players[indexPlayer].currentSpeed === players[indexPlayer].speed) {
-            return;
+        if (Math.abs(players[indexPlayer].speedY + coefY) > speed) {
+            let newSpeed;
+            
+            if (coefY > 0) {
+                newSpeed = 1;
+            } else {
+                newSpeed = -1;
+            }
+
+            players[indexPlayer].speedY = newSpeed * speed;
+        } else {
+            players[indexPlayer].speedY += coefY;
         }
-
-        players[indexPlayer].currentSpeed ++;
 
         this.gameObjects.setGameObject('players', players);
 
-        setTimeout(() => process.nextTick(() => this.onStartSpeed(nickname, coefs)), 100);
+        if (Math.abs(players[indexPlayer].speedY) === speed) {
+            return;
+        }
+
+        setTimeout(() => process.nextTick(() => this.onStartSpeedY(nickname, coefY)), 100);
     }
 }
