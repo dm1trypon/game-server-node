@@ -35,7 +35,7 @@ module.exports = class Events {
     onKeyBoard(dataObj) {
         const {nickname, key, isHold} = dataObj;
         
-        if (!KEYS.entries(key)) {
+        if (!KEYS.includes(key)) {
             console.log(`Unallowed key ${key}`);
 
             return;

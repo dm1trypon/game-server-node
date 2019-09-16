@@ -60,7 +60,7 @@ module.exports = class Client {
 
             const tick = this.tick;
 
-            setTimeout(() => this.onDownKeyPress(tick, nickname, connection), 5000);
+            setTimeout(() => this.onDownKeyPress(tick, nickname, connection), 2000);
 
             this.tick ++;
 
@@ -69,7 +69,41 @@ module.exports = class Client {
             }
 
             this.tick = 0;
-        }, 10000);
+        }, 3000);
+
+        setInterval(() => {
+            this.onKeyUpMethods[this.tick].nickname = nickname;
+            connection.sendUTF(JSON.stringify(this.onKeyUpMethods[this.tick]));
+
+            const tick = this.tick;
+
+            setTimeout(() => this.onDownKeyPress(tick, nickname, connection), 1000);
+
+            this.tick ++;
+
+            if (this.tick < 8) {
+                return;
+            }
+
+            this.tick = 0;
+        }, 2000);
+
+        setInterval(() => {
+            this.onKeyUpMethods[this.tick].nickname = nickname;
+            connection.sendUTF(JSON.stringify(this.onKeyUpMethods[this.tick]));
+
+            const tick = this.tick;
+
+            setTimeout(() => this.onDownKeyPress(tick, nickname, connection), 500);
+
+            this.tick ++;
+
+            if (this.tick < 8) {
+                return;
+            }
+
+            this.tick = 0;
+        }, 1000);
 
         // setInterval(() => {
         //     this.methods[8].nickname = nickname;

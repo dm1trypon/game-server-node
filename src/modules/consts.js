@@ -1,4 +1,4 @@
-const KEYS = ['up', 'down', 'left', 'right', 'up_left', 'up_right', 'down_left', 'down_right'];
+const KEYS = ['up', 'down', 'left', 'right'];
 const GAME_OBJECTS = ['players', 'bullets'];
 const MAX_ID = 100000;
 

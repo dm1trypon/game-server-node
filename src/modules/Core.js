@@ -137,6 +137,13 @@ module.exports = class Core {
             speedX: 0,
             speedY: 0,
             speed,
+            timers: {
+                up: false,
+                down: false,
+                left: false,
+                right: false,
+            },
+            controlKeys: [],
             currentSpeed: 0,
             rateFire,
             weaponNumberBullet,
@@ -384,94 +391,92 @@ module.exports = class Core {
             return;
         }
 
-        players[index].currentSpeed = 0;
+        if (!players[index].controlKeys.includes(key) && !isHold) {
+            console.log(`Player's ${nickname} key ${key} is not found for unpress!`);
+            return;
+        }
 
+        if (players[index].controlKeys.includes(key) && isHold) {
+            console.log(`Player's ${nickname} key ${key} already pressed!`);
+            return;
+        }
+
+        if (this.isNotAcceptRulesKeys(players[index].controlKeys, key, isHold)) {
+            console.log(`Key ${key} is not accept rules keys. Pressed keys: ${JSON.stringify(players[index].controlKeys)}`);
+            return;
+        }
+
+        if (players[index].controlKeys.length > 1) {
+            this.motionDistribution(players[index], players[index].controlKeys[0], false);
+        }
+
+        if (isHold) {
+            players[index].controlKeys.push(key);
+        }
+        
+        players[index] = this.motionDistribution(players[index], key, isHold);
+
+        this.gameObjects.setGameObject('players', players);
+    }
+
+    isNotAcceptRulesKeys(keys, key, isHold) {
+        return keys.includes('up') && key === 'down' && isHold ||
+               keys.includes('down') && key === 'up' && isHold ||
+               keys.includes('right') && key === 'left' && isHold ||
+               keys.includes('left') && key === 'right' && isHold;
+    }
+
+    motionDistribution(player, key, isHold) {
         switch (key) {
             case 'up':
                 if (!isHold) {
-                    this.onStopSpeedY(players[index].nickname, -1);
-                    return;
+                    player.controlKeys.splice(player.controlKeys.indexOf(key), 1);
+                    player.timers[key] = false;
+                    this.onStopSpeed(player.nickname, -1, 'speedY', key);
+                    break;
                 }
-                
-                this.onStartSpeedY(players[index].nickname, 1);
+
+                player.timers[key] = true;
+                this.onStartSpeed(player.nickname, 1, 'speedY', key);
 
                 break;
 
             case 'down':
                 if (!isHold) {
-                    this.onStopSpeedY(players[index].nickname, 1);
-                    return;
+                    player.controlKeys.splice(player.controlKeys.indexOf(key), 1);
+                    player.timers[key] = false;
+                    this.onStopSpeed(player.nickname, 1, 'speedY', key);
+                    break;
                 }
-        
-                this.onStartSpeedY(players[index].nickname, -1);
+
+                player.timers[key] = true;
+                this.onStartSpeed(player.nickname, -1, 'speedY', key);
 
                 break;
 
             case 'left':
                 if (!isHold) {
-                    this.onStopSpeedX(players[index].nickname, -1);
-                    return;
+                    player.controlKeys.splice(player.controlKeys.indexOf(key), 1);
+                    player.timers[key] = false;
+                    this.onStopSpeed(player.nickname, -1, 'speedX', key);
+                    break;
                 }
 
-                this.onStartSpeedX(players[index].nickname, 1);
+                player.timers[key] = true;
+                this.onStartSpeed(player.nickname, 1, 'speedX', key);
 
                 break;
 
             case 'right':
                 if (!isHold) {
-                    this.onStopSpeedX(players[index].nickname, 1);
-                    return;
+                    player.controlKeys.splice(player.controlKeys.indexOf(key), 1);
+                    player.timers[key] = false;
+                    this.onStopSpeed(player.nickname, 1, 'speedX', key);
+                    break;
                 }
 
-                this.onStartSpeedX(players[index].nickname, -1);
-
-                break;
-
-            case 'up_left':
-                if (!isHold) {
-                    this.onStopSpeedX(players[index].nickname, - 2 / 3);
-                    this.onStopSpeedY(players[index].nickname, - 2 / 3);
-                    return;
-                }
-
-                this.onStartSpeedX(players[index].nickname, 2 / 3);
-                this.onStartSpeedY(players[index].nickname, 2 / 3);
-
-                break;
-
-            case 'up_right':
-                if (!isHold) {
-                    this.onStopSpeedX(players[index].nickname, 2 / 3);
-                    this.onStopSpeedY(players[index].nickname, - 2 / 3);
-                    return;
-                }
-
-                this.onStartSpeedX(players[index].nickname, - 2 / 3);
-                this.onStartSpeedY(players[index].nickname, 2 / 3);
-
-                break;
-
-            case 'down_left':
-                if (!isHold) {
-                    this.onStopSpeedX(players[index].nickname, - 2 / 3);
-                    this.onStopSpeedY(players[index].nickname, 2 / 3);
-                    return;
-                }
-
-                this.onStartSpeedX(players[index].nickname, 2 / 3);
-                this.onStartSpeedY(players[index].nickname, - 2 / 3);
-
-                break;
-
-            case 'down_right':
-                if (!isHold) {
-                    this.onStopSpeedX(players[index].nickname, 2 / 3);
-                    this.onStopSpeedY(players[index].nickname, 2 / 3);
-                    return;
-                }
-
-                this.onStartSpeedX(players[index].nickname, - 2 / 3);
-                this.onStartSpeedY(players[index].nickname, - 2 / 3);
+                player.timers[key] = true;
+                this.onStartSpeed(player.nickname, -1, 'speedX', key);
 
                 break;
 
@@ -479,10 +484,10 @@ module.exports = class Core {
                 break;
         }
 
-        this.gameObjects.setGameObject('players', players);
+        return player;
     }
 
-    onStopSpeedX(nickname, coefX) {
+    onStopSpeed(nickname, coefSpeed, typeSpeed, key) {
         let players = this.gameObjects.getGameObject('players');
         let indexPlayer = -1;
 
@@ -501,22 +506,22 @@ module.exports = class Core {
             return;
         }
 
-        if (Math.abs(players[indexPlayer].speedX - coefX) < 1) {
-            players[indexPlayer].speedX = 0;
-        } else {
-            players[indexPlayer].speedX += coefX;
-        }
+        players[indexPlayer] = this.physics.onStopPlayerSpeed(typeSpeed, players[indexPlayer], coefSpeed);
 
         this.gameObjects.setGameObject('players', players);
 
-        if (!players[indexPlayer].speedX) {
+        if (!players[indexPlayer][typeSpeed]) {
             return;
         }
 
-        setTimeout(() => process.nextTick(() => this.onStopSpeedX(nickname, coefX)), 100);
+        if (players[indexPlayer].timers[key]) {
+            return;
+        }
+
+        setTimeout(() => process.nextTick(() => this.onStopSpeed(nickname, coefSpeed, typeSpeed, key)), 100);
     }
 
-    onStopSpeedY(nickname, coefY) {
+    onStartSpeed(nickname, coefSpeed, typeSpeed, key) {
         let players = this.gameObjects.getGameObject('players');
         let indexPlayer = -1;
 
@@ -535,106 +540,18 @@ module.exports = class Core {
             return;
         }
 
-        if (Math.abs(players[indexPlayer].speedY - coefY) < 1) {
-            players[indexPlayer].speedY = 0;
-        } else {
-            players[indexPlayer].speedY += coefY;
-        }
+        players[indexPlayer] = this.physics.onStartPlayerSpeed(typeSpeed, players[indexPlayer], coefSpeed);
 
         this.gameObjects.setGameObject('players', players);
 
-        if (!players[indexPlayer].speedY) {
+        if (Math.abs(players[indexPlayer][typeSpeed]) === Math.abs(players[indexPlayer].speed * coefSpeed)) {
             return;
         }
 
-        setTimeout(() => process.nextTick(() => this.onStopSpeedY(nickname, coefY)), 100);
-    }
-
-    onStartSpeedX(nickname, coefX) {
-        let players = this.gameObjects.getGameObject('players');
-        let indexPlayer = -1;
-
-        for (const playerObj of players) {
-            if (playerObj.nickname !== nickname) {
-                continue;
-            }
-
-            indexPlayer = players.indexOf(playerObj);
-
-            break;
-        }
-
-        if (indexPlayer === -1) {
-            console.log(`Player ${nickname} is not found in game objects!`);
+        if (!players[indexPlayer].timers[key]) {
             return;
         }
 
-        const speed = Math.abs(players[indexPlayer].speed * coefX); // 7 
-
-        if (Math.abs(players[indexPlayer].speedX + coefX) > speed) { 
-            let newSpeed;
-            
-            if (coefX > 0) {
-                newSpeed = 1;
-            } else {
-                newSpeed = -1;
-            }
-
-            players[indexPlayer].speedX = newSpeed * speed;
-        } else {
-            players[indexPlayer].speedX += coefX;
-        }
-
-        this.gameObjects.setGameObject('players', players);
-
-        if (Math.abs(players[indexPlayer].speedX) === speed) {
-            return;
-        }
-
-        setTimeout(() => process.nextTick(() => this.onStartSpeedX(nickname, coefX)), 100);
-    }
-
-    onStartSpeedY(nickname, coefY) {
-        let players = this.gameObjects.getGameObject('players');
-        let indexPlayer = -1;
-
-        for (const playerObj of players) {
-            if (playerObj.nickname !== nickname) {
-                continue;
-            }
-
-            indexPlayer = players.indexOf(playerObj);
-
-            break;
-        }
-
-        if (indexPlayer === -1) {
-            console.log(`Player ${nickname} is not found in game objects!`);
-            return;
-        }
-
-        const speed = Math.abs(players[indexPlayer].speed * coefY);
-
-        if (Math.abs(players[indexPlayer].speedY + coefY) > speed) {
-            let newSpeed;
-            
-            if (coefY > 0) {
-                newSpeed = 1;
-            } else {
-                newSpeed = -1;
-            }
-
-            players[indexPlayer].speedY = newSpeed * speed;
-        } else {
-            players[indexPlayer].speedY += coefY;
-        }
-
-        this.gameObjects.setGameObject('players', players);
-
-        if (Math.abs(players[indexPlayer].speedY) === speed) {
-            return;
-        }
-
-        setTimeout(() => process.nextTick(() => this.onStartSpeedY(nickname, coefY)), 100);
+        setTimeout(() => process.nextTick(() => this.onStartSpeed(nickname, coefSpeed, typeSpeed, key)), 100);
     }
 }

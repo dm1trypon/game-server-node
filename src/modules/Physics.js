@@ -243,4 +243,34 @@ module.exports = class Physics {
 
         delete this.timers[nickname];
     }
+
+    onStopPlayerSpeed(typeSpeed, player, coefSpeed) {
+        if (Math.abs(player[typeSpeed]) - Math.abs(coefSpeed) < 1) {
+            player[typeSpeed] = 0;
+        } else {
+            player[typeSpeed] += coefSpeed;
+        }
+
+        return player;
+    }
+
+    onStartPlayerSpeed(typeSpeed, player, coefSpeed) {
+        const speed = Math.abs(player.speed * coefSpeed);
+
+        if (Math.abs(player[typeSpeed]) + Math.abs(coefSpeed) > speed) { 
+            let newSpeed;
+            
+            if (coefSpeed > 0) {
+                newSpeed = 1;
+            } else {
+                newSpeed = -1;
+            }
+
+            player[typeSpeed] = newSpeed * speed;
+        } else {
+            player[typeSpeed] += coefSpeed;
+        }
+
+        return player;
+    }
 }
