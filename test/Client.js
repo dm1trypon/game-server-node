@@ -2,26 +2,48 @@ const WebSocketClient = require('websocket').client;
 const uuidv4 = require('uuid/v4');
 
 const {
-    onKeyboardLeft,
-    onKeyboardRight,
-    onKeyboardUp,
-    onKeyboardDown, 
-    onKeyboardUpRight,
-    onKeyboardUpLeft,
-    onKeyboardDownRight,
-    onKeyboardDownLeft,
-    onMouse,
     onVerify,
-} = require('./cases/methods');
+    onMouse,
+} = require('./cases/events');
+
+const {
+    onUpKeyboardUp,
+    onUpKeyboardDown,
+    onUpKeyboardLeft,
+    onUpKeyboardRight,
+    onUpKeyboardUpRight,
+    onUpKeyboardUpLeft,
+    onUpKeyboardDownRight,
+    onUpKeyboardDownLeft,
+} = require('./cases/onKeyUp');
+
+const {
+    onDownKeyboardUp,
+    onDownKeyboardDown,
+    onDownKeyboardLeft,
+    onDownKeyboardRight,
+    onDownKeyboardUpRight,
+    onDownKeyboardUpLeft,
+    onDownKeyboardDownRight,
+    onDownKeyboardDownLeft,
+} = require('./cases/onKeyDown');
 
 module.exports = class Client {
     constructor(host, port) {
         this.tick = 0;
-        this.methods = [onKeyboardLeft, onKeyboardRight, onKeyboardUp, onKeyboardDown,
-            onKeyboardUpRight, onKeyboardUpLeft, onKeyboardDownRight, onKeyboardDownLeft, onMouse];
+        this.onKeyUpMethods = [onUpKeyboardUp, onUpKeyboardDown, onUpKeyboardLeft, onUpKeyboardRight,
+            onUpKeyboardUpRight, onUpKeyboardUpLeft, onUpKeyboardDownRight, onUpKeyboardDownLeft];
+
+        this.onKeyDownMethods = [onDownKeyboardUp, onDownKeyboardDown, onDownKeyboardLeft, onDownKeyboardRight,
+            onDownKeyboardUpRight, onDownKeyboardUpLeft, onDownKeyboardDownRight, onDownKeyboardDownLeft];
 
         this.client = new WebSocketClient();
         this.connect(host, port);
+    }
+
+    onDownKeyPress(tick, nickname, connection) {
+        this.onKeyDownMethods[tick].nickname = nickname;
+        connection.sendUTF(JSON.stringify(this.onKeyDownMethods[tick]));
     }
 
     startTimer(connection) {
@@ -33,8 +55,12 @@ module.exports = class Client {
         connection.sendUTF(JSON.stringify(verifyObj));
 
         setInterval(() => {
-            this.methods[this.tick].nickname = nickname;
-            connection.sendUTF(JSON.stringify(this.methods[this.tick]));
+            this.onKeyUpMethods[this.tick].nickname = nickname;
+            connection.sendUTF(JSON.stringify(this.onKeyUpMethods[this.tick]));
+
+            const tick = this.tick;
+
+            setTimeout(() => this.onDownKeyPress(tick, nickname, connection), 5000);
 
             this.tick ++;
 
@@ -43,7 +69,7 @@ module.exports = class Client {
             }
 
             this.tick = 0;
-        }, 5000);
+        }, 10000);
 
         // setInterval(() => {
         //     this.methods[8].nickname = nickname;

@@ -389,53 +389,89 @@ module.exports = class Core {
         switch (key) {
             case 'up':
                 if (!isHold) {
+                    this.onStopSpeedY(players[index].nickname, -1);
                     return;
                 }
                 
-                this.onStartSpeedX(players[index].nickname, 1);
+                this.onStartSpeedY(players[index].nickname, 1);
 
                 break;
 
             case 'down':
-            if (!isHold) {
-                return;
-            }
+                if (!isHold) {
+                    this.onStopSpeedY(players[index].nickname, 1);
+                    return;
+                }
         
                 this.onStartSpeedY(players[index].nickname, -1);
 
                 break;
 
             case 'left':
+                if (!isHold) {
+                    this.onStopSpeedX(players[index].nickname, -1);
+                    return;
+                }
+
                 this.onStartSpeedX(players[index].nickname, 1);
 
                 break;
 
             case 'right':
+                if (!isHold) {
+                    this.onStopSpeedX(players[index].nickname, 1);
+                    return;
+                }
+
                 this.onStartSpeedX(players[index].nickname, -1);
 
                 break;
 
             case 'up_left':
-                this.onStartSpeedX(players[index].nickname, 1);
-                this.onStartSpeedY(players[index].nickname, 1);
+                if (!isHold) {
+                    this.onStopSpeedX(players[index].nickname, - 2 / 3);
+                    this.onStopSpeedY(players[index].nickname, - 2 / 3);
+                    return;
+                }
+
+                this.onStartSpeedX(players[index].nickname, 2 / 3);
+                this.onStartSpeedY(players[index].nickname, 2 / 3);
 
                 break;
 
             case 'up_right':
-                this.onStartSpeedX(players[index].nickname, -1);
-                this.onStartSpeedY(players[index].nickname, 1);
+                if (!isHold) {
+                    this.onStopSpeedX(players[index].nickname, 2 / 3);
+                    this.onStopSpeedY(players[index].nickname, - 2 / 3);
+                    return;
+                }
+
+                this.onStartSpeedX(players[index].nickname, - 2 / 3);
+                this.onStartSpeedY(players[index].nickname, 2 / 3);
 
                 break;
 
             case 'down_left':
-                this.onStartSpeedX(players[index].nickname, 1);
-                this.onStartSpeedY(players[index].nickname, -1);
+                if (!isHold) {
+                    this.onStopSpeedX(players[index].nickname, - 2 / 3);
+                    this.onStopSpeedY(players[index].nickname, 2 / 3);
+                    return;
+                }
+
+                this.onStartSpeedX(players[index].nickname, 2 / 3);
+                this.onStartSpeedY(players[index].nickname, - 2 / 3);
 
                 break;
 
             case 'down_right':
-                this.onStartSpeedX(players[index].nickname, -1);
-                this.onStartSpeedY(players[index].nickname, -1);
+                if (!isHold) {
+                    this.onStopSpeedX(players[index].nickname, 2 / 3);
+                    this.onStopSpeedY(players[index].nickname, 2 / 3);
+                    return;
+                }
+
+                this.onStartSpeedX(players[index].nickname, - 2 / 3);
+                this.onStartSpeedY(players[index].nickname, - 2 / 3);
 
                 break;
 
@@ -444,6 +480,74 @@ module.exports = class Core {
         }
 
         this.gameObjects.setGameObject('players', players);
+    }
+
+    onStopSpeedX(nickname, coefX) {
+        let players = this.gameObjects.getGameObject('players');
+        let indexPlayer = -1;
+
+        for (const playerObj of players) {
+            if (playerObj.nickname !== nickname) {
+                continue;
+            }
+
+            indexPlayer = players.indexOf(playerObj);
+
+            break;
+        }
+
+        if (indexPlayer === -1) {
+            console.log(`Player ${nickname} is not found in game objects!`);
+            return;
+        }
+
+        if (Math.abs(players[indexPlayer].speedX - coefX) < 1) {
+            players[indexPlayer].speedX = 0;
+        } else {
+            players[indexPlayer].speedX += coefX;
+        }
+
+        this.gameObjects.setGameObject('players', players);
+
+        if (!players[indexPlayer].speedX) {
+            return;
+        }
+
+        setTimeout(() => process.nextTick(() => this.onStopSpeedX(nickname, coefX)), 100);
+    }
+
+    onStopSpeedY(nickname, coefY) {
+        let players = this.gameObjects.getGameObject('players');
+        let indexPlayer = -1;
+
+        for (const playerObj of players) {
+            if (playerObj.nickname !== nickname) {
+                continue;
+            }
+
+            indexPlayer = players.indexOf(playerObj);
+
+            break;
+        }
+
+        if (indexPlayer === -1) {
+            console.log(`Player ${nickname} is not found in game objects!`);
+            return;
+        }
+
+        if (Math.abs(players[indexPlayer].speedY - coefY) < 1) {
+            players[indexPlayer].speedY = 0;
+        } else {
+            players[indexPlayer].speedY += coefY;
+        }
+
+        this.gameObjects.setGameObject('players', players);
+
+        if (!players[indexPlayer].speedY) {
+            return;
+        }
+
+        setTimeout(() => process.nextTick(() => this.onStopSpeedY(nickname, coefY)), 100);
     }
 
     onStartSpeedX(nickname, coefX) {
