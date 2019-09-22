@@ -136,6 +136,8 @@ module.exports = class Core {
             height: sizePlayers.height,
             speedX: 0,
             speedY: 0,
+            coefSpeedX: 0,
+            coefSpeedY: 0,
             speed,
             timers: {
                 up: false,
@@ -432,12 +434,14 @@ module.exports = class Core {
                 if (!isHold) {
                     player.controlKeys.splice(player.controlKeys.indexOf(key), 1);
                     player.timers[key] = false;
-                    this.onStopSpeed(player.nickname, -1, 'speedY', key);
+                    player.coefSpeedY = -1;
+                    this.onStopSpeed(player.nickname, 'speedY', key);
                     break;
                 }
 
                 player.timers[key] = true;
-                this.onStartSpeed(player.nickname, 1, 'speedY', key);
+                player.coefSpeedY = 1;
+                this.onStartSpeed(player.nickname, 'speedY', key);
 
                 break;
 
@@ -445,12 +449,14 @@ module.exports = class Core {
                 if (!isHold) {
                     player.controlKeys.splice(player.controlKeys.indexOf(key), 1);
                     player.timers[key] = false;
-                    this.onStopSpeed(player.nickname, 1, 'speedY', key);
+                    player.coefSpeedY = 1;
+                    this.onStopSpeed(player.nickname, 'speedY', key);
                     break;
                 }
 
                 player.timers[key] = true;
-                this.onStartSpeed(player.nickname, -1, 'speedY', key);
+                player.coefSpeedY = -1;
+                this.onStartSpeed(player.nickname, 'speedY', key);
 
                 break;
 
@@ -458,12 +464,14 @@ module.exports = class Core {
                 if (!isHold) {
                     player.controlKeys.splice(player.controlKeys.indexOf(key), 1);
                     player.timers[key] = false;
-                    this.onStopSpeed(player.nickname, -1, 'speedX', key);
+                    player.coefSpeedX = -1;
+                    this.onStopSpeed(player.nickname, 'speedX', key);
                     break;
                 }
 
                 player.timers[key] = true;
-                this.onStartSpeed(player.nickname, 1, 'speedX', key);
+                player.coefSpeedX = 1;
+                this.onStartSpeed(player.nickname, 'speedX', key);
 
                 break;
 
@@ -471,12 +479,14 @@ module.exports = class Core {
                 if (!isHold) {
                     player.controlKeys.splice(player.controlKeys.indexOf(key), 1);
                     player.timers[key] = false;
-                    this.onStopSpeed(player.nickname, 1, 'speedX', key);
+                    player.coefSpeedX = 1;
+                    this.onStopSpeed(player.nickname, 'speedX', key);
                     break;
                 }
 
                 player.timers[key] = true;
-                this.onStartSpeed(player.nickname, -1, 'speedX', key);
+                player.coefSpeedX = -1;
+                this.onStartSpeed(player.nickname, 'speedX', key);
 
                 break;
 
@@ -487,7 +497,7 @@ module.exports = class Core {
         return player;
     }
 
-    onStopSpeed(nickname, coefSpeed, typeSpeed, key) {
+    onStopSpeed(nickname, typeSpeed, key) {
         let players = this.gameObjects.getGameObject('players');
         let indexPlayer = -1;
 
@@ -505,6 +515,8 @@ module.exports = class Core {
             console.log(`Player ${nickname} is not found in game objects!`);
             return;
         }
+
+        const coefSpeed = typeSpeed === 'speedX' ? players[indexPlayer].coefSpeedX : players[indexPlayer].coefSpeedY;
 
         players[indexPlayer] = this.physics.onStopPlayerSpeed(typeSpeed, players[indexPlayer], coefSpeed);
 
@@ -518,10 +530,10 @@ module.exports = class Core {
             return;
         }
 
-        setTimeout(() => process.nextTick(() => this.onStopSpeed(nickname, coefSpeed, typeSpeed, key)), 100);
+        setTimeout(() => process.nextTick(() => this.onStopSpeed(nickname, typeSpeed, key)), 100);
     }
 
-    onStartSpeed(nickname, coefSpeed, typeSpeed, key) {
+    onStartSpeed(nickname, typeSpeed, key) {
         let players = this.gameObjects.getGameObject('players');
         let indexPlayer = -1;
 
@@ -540,6 +552,8 @@ module.exports = class Core {
             return;
         }
 
+        const coefSpeed = typeSpeed === 'speedX' ? players[indexPlayer].coefSpeedX : players[indexPlayer].coefSpeedY;
+
         players[indexPlayer] = this.physics.onStartPlayerSpeed(typeSpeed, players[indexPlayer], coefSpeed);
 
         this.gameObjects.setGameObject('players', players);
@@ -552,6 +566,6 @@ module.exports = class Core {
             return;
         }
 
-        setTimeout(() => process.nextTick(() => this.onStartSpeed(nickname, coefSpeed, typeSpeed, key)), 100);
+        setTimeout(() => process.nextTick(() => this.onStartSpeed(nickname, typeSpeed, key)), 100);
     }
 }

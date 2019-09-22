@@ -30,7 +30,7 @@ module.exports = class Physics {
                 return this.onPlayerBufEffectCollision(colObject, gameObjects);
 
             case 'player_player':
-                break;
+                return this.onPlayersCollision(colObject, gameObjects);
 
             case 'player_bullet':
                 return this.onPlayerBulletCollision(colObject, gameObjects);
@@ -44,7 +44,37 @@ module.exports = class Physics {
     }
 
     onPlayersCollision(colObject, gameObjects) {
+        let {players} = gameObjects;
 
+        const playerOne = colObject.objectTwo;
+        const playerTwo = colObject.objectOne;
+
+        const indexPlayerOne = players.indexOf(playerOne);
+
+        if (indexPlayerOne === -1) {
+            console.log(`Player is not exists!`);
+            return gameObjects;
+        }
+
+        const indexPlayerTwo = players.indexOf(playerTwo);
+
+        if (indexPlayerTwo === -1) {
+            console.log(`Player is not exists!`);
+            return gameObjects;
+        }
+
+        if (playerOne.nickname === playerTwo.nickname) {
+            return gameObjects;
+        }
+
+        playerOne.speedX *= -1;
+        playerOne.speedY *= -1;
+        playerOne.coefSpeedX *= -1;
+        playerOne.coefSpeedY *= -1;
+
+        gameObjects.players = players;
+
+        return gameObjects;
     }
 
     onPlayerBulletCollision(colObject, gameObjects) {
