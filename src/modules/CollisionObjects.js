@@ -4,7 +4,7 @@ module.exports = class CollisionObjects {
     }
 
     getCollisionObjects(gameObjects) {
-        const {players, bullets, walls, bufEffects} = gameObjects;
+        const {players, bullets, walls, bufEffects, scenes} = gameObjects;
 
         let collisionObjectsArr = [];
 
@@ -35,6 +35,7 @@ module.exports = class CollisionObjects {
                 collisionObjectsArr.push({nameOne: 'player', objectOne: player, nameTwo: 'bullet', objectTwo: bullet});
             }
 
+            // - square collision ?????
             for (const wall of walls) {
                 const {posX: posTwoX, posY: posTwoY, width: wTwo, height: hTwo} = wall;
 
@@ -44,6 +45,7 @@ module.exports = class CollisionObjects {
 
                 collisionObjectsArr.push({nameOne: 'player', objectOne: player, nameTwo: 'wall', objectTwo: wall});
             }
+            //
 
             for (const bufEffect of bufEffects) {
                 const {posX: posTwoX, posY: posTwoY, width: wTwo, height: hTwo} = bufEffect;
@@ -54,9 +56,34 @@ module.exports = class CollisionObjects {
 
                 collisionObjectsArr.push({nameOne: 'player', objectOne: player, nameTwo: 'bufEffect', objectTwo: bufEffect});
             }
+
+            for (const scene of scenes) {
+                const {posX: posTwoX, posY: posTwoY, width: wTwo, height: hTwo} = scene;
+
+                if (!this.isSceneCollision({posOneX, posOneY, wOne, hOne}, {posTwoX, posTwoY, wTwo, hTwo})) {
+                    continue;
+                }
+
+                collisionObjectsArr.push({nameOne: 'player', objectOne: player, nameTwo: 'scene', objectTwo: scene});
+            }
         }
 
         return collisionObjectsArr;
+    }
+
+    isSceneCollision(objectOne, objectTwo) {
+        let {posOneX, posOneY, wOne, hOne} = objectOne;
+        let {posTwoX, posTwoY, wTwo, hTwo} = objectTwo;
+
+        if (posOneX < posTwoX || (posOneX + wOne) > (posTwoX + wTwo)) {
+            return true;
+        }
+
+        if (posOneY < posTwoY || (posOneY + hOne) > (posTwoY + hTwo)) {
+            return true;
+        }
+
+        return false;
     }
 
     isCollision(objectOne, objectTwo) {

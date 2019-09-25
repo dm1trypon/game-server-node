@@ -4,7 +4,7 @@
     },
     "gameEngine": {
         "fps": 17,
-        "numberBufEffects": 5
+        "numberBufEffects": 30
     },
     "gameSettings": {
         "objects": {

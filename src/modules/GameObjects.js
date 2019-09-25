@@ -4,6 +4,7 @@ module.exports = class GameObjects {
         this.bullets = [];
         this.walls = [];
         this.bufEffects = [];
+        this.scenes = [];
     }
 
     setGameObject(name, array) {
@@ -22,6 +23,10 @@ module.exports = class GameObjects {
 
             case 'bufEffects':
                 this.bufEffects = array;
+                break;
+
+            case 'scenes':
+                this.scenes = array;
                 break;
 
             default:
@@ -44,6 +49,9 @@ module.exports = class GameObjects {
 
             case 'bufEffects':
                 return this.bufEffects;
+
+            case 'scenes':
+                return this.scenes;
 
             default:
                 console.log(`Object ${name} is not found!`);

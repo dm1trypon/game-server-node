@@ -38,6 +38,9 @@ module.exports = class Physics {
             case 'player_wall':
                 break;
 
+            case 'player_scene':
+                return this.onPlayerSceneCollision(colObject, gameObjects);
+                
             default:
                 break;
         }
@@ -71,6 +74,51 @@ module.exports = class Physics {
         playerOne.speedY *= -1;
         playerOne.coefSpeedX *= -1;
         playerOne.coefSpeedY *= -1;
+
+        gameObjects.players = players;
+
+        return gameObjects;
+    }
+
+    onPlayerSceneCollision(colObject, gameObjects) {
+        let {players, scenes} = gameObjects;
+
+        const scene = colObject.objectTwo;
+        const player = colObject.objectOne;
+
+        const indexPlayer = players.indexOf(player);
+
+        if (indexPlayer === -1) {
+            console.log(`Player is not exists!`);
+            return gameObjects;
+        }
+
+        const indexScene = scenes.indexOf(scene);
+
+        if (indexScene === -1) {
+            console.log(`Scene is not exists!`);
+            return gameObjects;
+        }
+
+        if (players[indexPlayer].posX < scenes[indexScene].posX) {
+            players[indexPlayer].speedX *= -1;
+            players[indexPlayer].posX = scenes[indexScene].posX;
+        }
+
+        if (players[indexPlayer].posX + players[indexPlayer].width > scenes[indexScene].posX + scenes[indexScene].width) {
+            players[indexPlayer].speedX *= -1;
+            players[indexPlayer].posX = scenes[indexScene].posX + scenes[indexScene].width;
+        }
+
+        if (players[indexPlayer].posY < scenes[indexScene].posY) {
+            players[indexPlayer].speedY *= -1;
+            players[indexPlayer].posY = scenes[indexScene].posY;
+        }
+
+        if (players[indexPlayer].posY + players[indexPlayer].height > scenes[indexScene].posY + scenes[indexScene].height) {
+            players[indexPlayer].speedY *= -1;
+            players[indexPlayer].posY = scenes[indexScene].posY + scenes[indexScene].height;
+        }
 
         gameObjects.players = players;
 
