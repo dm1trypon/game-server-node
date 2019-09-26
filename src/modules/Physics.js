@@ -1,4 +1,5 @@
 const Config = require('./Config');
+const { getRandomNumber } = require('./randomizer');
 
 module.exports = class Physics {
     constructor(core) {
@@ -101,23 +102,39 @@ module.exports = class Physics {
         }
 
         if (players[indexPlayer].posX < scenes[indexScene].posX) {
-            players[indexPlayer].speedX *= -1;
+            if (!player.statusKeys.left && !player.statusKeys.right) {
+                player.coefSpeedX *= -1;
+            }
+
+            player.speedX = player.speedX * (-1) + player.coefSpeedX;
             players[indexPlayer].posX = scenes[indexScene].posX;
         }
 
         if (players[indexPlayer].posX + players[indexPlayer].width > scenes[indexScene].posX + scenes[indexScene].width) {
-            players[indexPlayer].speedX *= -1;
-            players[indexPlayer].posX = scenes[indexScene].posX + scenes[indexScene].width;
+            if (!player.statusKeys.left && !player.statusKeys.right) {
+                player.coefSpeedX *= -1;
+            }
+            
+            player.speedX = player.speedX * (-1) + player.coefSpeedX;
+            players[indexPlayer].posX = scenes[indexScene].posX + scenes[indexScene].width - players[indexPlayer].width;
         }
 
         if (players[indexPlayer].posY < scenes[indexScene].posY) {
-            players[indexPlayer].speedY *= -1;
+            if (!player.statusKeys.up && !player.statusKeys.down) {
+                player.coefSpeedY *= -1;
+            }
+
+            player.speedY = player.speedY * (-1) + player.coefSpeedY;
             players[indexPlayer].posY = scenes[indexScene].posY;
         }
 
         if (players[indexPlayer].posY + players[indexPlayer].height > scenes[indexScene].posY + scenes[indexScene].height) {
-            players[indexPlayer].speedY *= -1;
-            players[indexPlayer].posY = scenes[indexScene].posY + scenes[indexScene].height;
+            if (!player.statusKeys.up && !player.statusKeys.down) {
+                player.coefSpeedY *= -1;
+            }
+
+            player.speedY = player.speedY * (-1) + player.coefSpeedY;
+            players[indexPlayer].posY = scenes[indexScene].posY + scenes[indexScene].height - players[indexPlayer].height;
         }
 
         gameObjects.players = players;
@@ -332,9 +349,7 @@ module.exports = class Physics {
         return player;
     }
 
-    onStartPlayerSpeed(typeSpeed, player, coefSpeed) {
-        const speed = Math.abs(player.speed * coefSpeed);
-
+    onStartPlayerSpeed(typeSpeed, player, coefSpeed, speed) {
         if (Math.abs(player[typeSpeed]) + Math.abs(coefSpeed) > speed) { 
             let newSpeed;
             
