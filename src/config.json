@@ -3,23 +3,23 @@
         "port": 44444
     },
     "gameEngine": {
-        "fps": 17,
+        "fps": 10,
         "numberBufEffects": 30
     },
     "gameSettings": {
         "objects": {
             "scene": {
                 "size": {
-                    "width": 800,
-                    "height": 600
+                    "width": 3000,
+                    "height": 3000
                 }
             },
             "players": {
                 "size": {
-                    "width": 50,
-                    "height": 50
+                    "width": 70,
+                    "height": 70
                 },
-                "speed": 7,
+                "speed": 4,
                 "health": 100
             },
             "bullets": {
@@ -28,8 +28,8 @@
                         "width": 30,
                         "height": 30
                     },
-                    "speed": 20,
-                    "rate": 40,
+                    "speed": 10,
+                    "rate": 10,
                     "damage": 8,
                     "default": true,
                     "numberBullets": 0

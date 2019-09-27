@@ -68,6 +68,20 @@ module.exports = class CollisionObjects {
             }
         }
 
+        for (const bullet of bullets) {
+            const {posX: posOneX, posY: posOneY, width: wOne, height: hOne} = bullet;
+
+            for (const scene of scenes) {
+                const {posX: posTwoX, posY: posTwoY, width: wTwo, height: hTwo} = scene;
+
+                if (!this.isSceneCollision({posOneX, posOneY, wOne, hOne}, {posTwoX, posTwoY, wTwo, hTwo})) {
+                    continue;
+                }
+
+                collisionObjectsArr.push({nameOne: 'bullet', objectOne: bullet, nameTwo: 'scene', objectTwo: scene});
+            }
+        }
+
         return collisionObjectsArr;
     }
 

@@ -41,10 +41,40 @@ module.exports = class Physics {
 
             case 'player_scene':
                 return this.onPlayerSceneCollision(colObject, gameObjects);
+
+            case 'bullet_scene':
+                return this.onBulletSceneCollision(colObject, gameObjects);
                 
             default:
                 break;
         }
+    }
+
+    onBulletSceneCollision(colObject, gameObjects) {
+        let {bullets, scenes} = gameObjects;
+
+        const bullet = colObject.objectOne;
+        const scene = colObject.objectTwo;
+
+        const indexBullet = bullets.indexOf(bullet);
+
+        if (indexBullet === -1) {
+            console.log(`Bullet is not exists!`);
+            return gameObjects;
+        }
+
+        const indexScene = scenes.indexOf(scene);
+
+        if (indexScene === -1) {
+            console.log(`Scene is not exists!`);
+            return gameObjects;
+        }
+
+        bullets.splice(indexBullet, 1);
+
+        gameObjects.bullets = bullets;
+
+        return gameObjects;
     }
 
     onPlayersCollision(colObject, gameObjects) {

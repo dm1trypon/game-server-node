@@ -92,6 +92,7 @@ module.exports = class Core {
         let scenesArray = this.gameObjects.getGameObject('scenes');
 
         const newSceneObj = {
+            id: getRandomNumber(0, MAX_ID),
             width,
             height,
             posX: 0,
@@ -140,8 +141,6 @@ module.exports = class Core {
         for (const key of Object.keys(bullets)) {
             weaponNumberBullet[key] = 0;
         }
-
-        const actingBufEffects = [];
 
         const newPlayerObj = {
             nickname,
@@ -387,8 +386,9 @@ module.exports = class Core {
         const bullets = this.gameObjects.getGameObject('bullets');
         const walls = this.gameObjects.getGameObject('walls');
         const bufEffects = this.gameObjects.getGameObject('bufEffects');
+        const scenes = this.gameObjects.getGameObject('scenes');
 
-        return { players, bullets, walls, bufEffects };
+        return { players, bullets, walls, bufEffects, scenes };
     }
 
     isVerify(dataObj) {
