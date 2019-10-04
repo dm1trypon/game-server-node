@@ -105,9 +105,9 @@ module.exports = class Core {
     }
 
     createBullet(dataObj) {
-        const { nickname, clickPosX, clickPosY, playerPosX, playerPosY } = dataObj;
+        const { nickname, clickPosX, clickPosY, playerPosX, playerPosY, playerWidth, playerHeight } = dataObj;
         const { gameSettings: { objects: { bullets } } } = this.config;
-        const { speed, size, damage } = bullets[this.defaultWeapon];
+        const { speed, size, damage, timeLife } = bullets[this.defaultWeapon];
 
         let bulletsArray = this.gameObjects.getGameObject('bullets');
 
@@ -117,14 +117,16 @@ module.exports = class Core {
             weapon: this.defaultWeapon,
             nickname,
             idBullet: getRandomNumber(0, MAX_ID),
-            posX: playerPosX,
-            posY: playerPosY,
+            posX: playerPosX + playerWidth / 2 - size.width / 2,
+            posY: playerPosY + playerHeight / 2 - size.height / 2,
             width: size.width,
             height: size.height,
             speedX,
             speedY,
             speed,
             damage,
+            currentTimeLife: 0,
+            timeLife,
         }
 
         bulletsArray.push(newBulletObj);
@@ -254,7 +256,11 @@ module.exports = class Core {
     }
 
     setPositionObjects(nameObject) {
-        const objectsArray = this.gameObjects.getGameObject(nameObject);
+        let objectsArray = this.gameObjects.getGameObject(nameObject);
+
+        if (nameObject === 'bullets') {
+            objectsArray = this.checkLifeBullet(objectsArray);
+        }
 
         for (let object of objectsArray) {
             object.posX += object.speedX;
@@ -314,6 +320,8 @@ module.exports = class Core {
             this.createBullet(Object.assign({
                 playerPosX: players[indexPlayer].posX,
                 playerPosY: players[indexPlayer].posY,
+                playerWidth: players[indexPlayer].width,
+                playerHeight: players[indexPlayer].height,
             }, dataObj));
 
             players[indexPlayer].isRateFire = false;
@@ -389,6 +397,20 @@ module.exports = class Core {
         const scenes = this.gameObjects.getGameObject('scenes');
 
         return { players, bullets, walls, bufEffects, scenes };
+    }
+
+    checkLifeBullet(bullets) {
+        for (let bullet of bullets) {
+            if (bullet.currentTimeLife > bullet.timeLife) {
+                bullets.splice(bullets.indexOf(bullet), 1);
+                console.log("Bullet die!");
+                continue;
+            }
+
+            bullet.currentTimeLife ++;
+        }
+
+        return bullets;
     }
 
     isVerify(dataObj) {
@@ -682,5 +704,9 @@ module.exports = class Core {
         }
 
         setTimeout(() => process.nextTick(() => this.onControlSpeedY(nickname)), 100);
+    }
+
+    wallsGenerator() {
+        const { gameEngine: { numberBufEffects }, gameSettings: { objects: { scene: { size: sizeScene }, bufEffects } } } = this.config;
     }
 }

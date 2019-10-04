@@ -3,7 +3,7 @@ const { getRandomNumber } = require('./randomizer');
 
 module.exports = class Physics {
     constructor(core) {
-        const {defaultWeapon} = core;
+        const { defaultWeapon } = core;
         this.core = core;
         this.config = Config.getInstance().getConfig();
         this.defaultWeapon = defaultWeapon;
@@ -12,7 +12,7 @@ module.exports = class Physics {
 
     process(collisionObjects, gameObjects) {
         for (const colObject of collisionObjects) {
-            const {nameOne, nameTwo} = colObject;
+            const { nameOne, nameTwo } = colObject;
             const objectsNames = [nameOne, nameTwo];
 
             gameObjects = this.rules(colObject, gameObjects, objectsNames);
@@ -44,14 +44,14 @@ module.exports = class Physics {
 
             case 'bullet_scene':
                 return this.onBulletSceneCollision(colObject, gameObjects);
-                
+
             default:
                 break;
         }
     }
 
     onBulletSceneCollision(colObject, gameObjects) {
-        let {bullets, scenes} = gameObjects;
+        let { bullets, scenes } = gameObjects;
 
         const bullet = colObject.objectOne;
         const scene = colObject.objectTwo;
@@ -78,7 +78,7 @@ module.exports = class Physics {
     }
 
     onPlayersCollision(colObject, gameObjects) {
-        let {players} = gameObjects;
+        let { players } = gameObjects;
 
         const playerOne = colObject.objectTwo;
         const playerTwo = colObject.objectOne;
@@ -101,10 +101,36 @@ module.exports = class Physics {
             return gameObjects;
         }
 
-        playerOne.speedX *= -1;
-        playerOne.speedY *= -1;
-        playerOne.coefSpeedX *= -1;
-        playerOne.coefSpeedY *= -1;
+        // const pointCollisionObject = {
+        //     colX: Math.abs(players[indexPlayerOne].posX - players[indexPlayerTwo].posX),
+        //     colY: Math.abs(players[indexPlayerOne].posY - players[indexPlayerTwo].posY),
+        // };
+
+        if (players[indexPlayerOne].speedX > players[indexPlayerOne].speedY) {
+            if (!players[indexPlayerOne].statusKeys.up && !players[indexPlayerOne].statusKeys.down) {
+                players[indexPlayerOne].coefSpeedX *= -1;
+            }
+
+            players[indexPlayerOne].speedY = players[indexPlayerOne].speedY * (-1) + players[indexPlayerOne].coefSpeedY;
+            players[indexPlayerOne].posY += 3 * players[indexPlayerOne].speedY;
+        } else {
+            if (!players[indexPlayerOne].statusKeys.left && !players[indexPlayerOne].statusKeys.right) {
+                players[indexPlayerOne].coefSpeedX *= -1;
+            }
+
+            players[indexPlayerOne].speedX = players[indexPlayerOne].speedX * (-1) + players[indexPlayerOne].coefSpeedX;
+            players[indexPlayerOne].posX += 3 * players[indexPlayerOne].speedX;
+        }
+
+        if (players[indexPlayerOne].speedX === players[indexPlayerOne].speedY) {
+            players[indexPlayerOne].speedX = players[indexPlayerOne].speedX * (-1) + players[indexPlayerOne].coefSpeedX;
+            players[indexPlayerOne].coefSpeedX *= -1;
+            players[indexPlayerOne].posX += 3 * players[indexPlayerOne].speedY;
+
+            players[indexPlayerOne].speedY = players[indexPlayerOne].speedY * (-1) + players[indexPlayerOne].coefSpeedY;
+            players[indexPlayerOne].coefSpeedY *= -1;
+            players[indexPlayerOne].posY += 3 * players[indexPlayerOne].speedY;
+        }
 
         gameObjects.players = players;
 
@@ -112,7 +138,7 @@ module.exports = class Physics {
     }
 
     onPlayerSceneCollision(colObject, gameObjects) {
-        let {players, scenes} = gameObjects;
+        let { players, scenes } = gameObjects;
 
         const scene = colObject.objectTwo;
         const player = colObject.objectOne;
@@ -132,11 +158,11 @@ module.exports = class Physics {
         }
 
         if (players[indexPlayer].posX < scenes[indexScene].posX) {
-            if (!player.statusKeys.left && !player.statusKeys.right) {
-                player.coefSpeedX *= -1;
+            if (!players[indexPlayer].statusKeys.left && !players[indexPlayer].statusKeys.right) {
+                players[indexPlayer].coefSpeedX *= -1;
             }
 
-            player.speedX = player.speedX * (-1) + player.coefSpeedX;
+            players[indexPlayer].speedX = players[indexPlayer].speedX * (-1) + players[indexPlayer].coefSpeedX;
             players[indexPlayer].posX = scenes[indexScene].posX;
         }
 
@@ -144,26 +170,26 @@ module.exports = class Physics {
             if (!player.statusKeys.left && !player.statusKeys.right) {
                 player.coefSpeedX *= -1;
             }
-            
-            player.speedX = player.speedX * (-1) + player.coefSpeedX;
+
+            players[indexPlayer].speedX = players[indexPlayer].speedX * (-1) + players[indexPlayer].coefSpeedX;
             players[indexPlayer].posX = scenes[indexScene].posX + scenes[indexScene].width - players[indexPlayer].width;
         }
 
         if (players[indexPlayer].posY < scenes[indexScene].posY) {
-            if (!player.statusKeys.up && !player.statusKeys.down) {
-                player.coefSpeedY *= -1;
+            if (!players[indexPlayer].statusKeys.up && !players[indexPlayer].statusKeys.down) {
+                players[indexPlayer].coefSpeedY *= -1;
             }
 
-            player.speedY = player.speedY * (-1) + player.coefSpeedY;
+            players[indexPlayer].speedY = players[indexPlayer].speedY * (-1) + players[indexPlayer].coefSpeedY;
             players[indexPlayer].posY = scenes[indexScene].posY;
         }
 
         if (players[indexPlayer].posY + players[indexPlayer].height > scenes[indexScene].posY + scenes[indexScene].height) {
-            if (!player.statusKeys.up && !player.statusKeys.down) {
-                player.coefSpeedY *= -1;
+            if (!players[indexPlayer].statusKeys.up && !players[indexPlayer].statusKeys.down) {
+                players[indexPlayer].coefSpeedY *= -1;
             }
 
-            player.speedY = player.speedY * (-1) + player.coefSpeedY;
+            players[indexPlayer].speedY = players[indexPlayer].speedY * (-1) + players[indexPlayer].coefSpeedY;
             players[indexPlayer].posY = scenes[indexScene].posY + scenes[indexScene].height - players[indexPlayer].height;
         }
 
@@ -173,15 +199,15 @@ module.exports = class Physics {
     }
 
     onPlayerBulletCollision(colObject, gameObjects) {
-        const {gameSettings: {objects: {scene: {size: sizeScene}, players: {speed, health}}}} = this.config;
+        const { gameSettings: { objects: { scene: { size: sizeScene }, players: { speed, health } } } } = this.config;
 
-        let {bullets, players} = gameObjects;
+        let { bullets, players } = gameObjects;
 
         const bullet = colObject.objectTwo;
         const player = colObject.objectOne;
 
         const indexPlayer = players.indexOf(player);
-        
+
         if (indexPlayer === -1) {
             console.log(`Player is not exists!`);
             return gameObjects;
@@ -215,12 +241,12 @@ module.exports = class Physics {
 
         gameObjects.players = players;
         gameObjects.bullets = bullets;
-        
+
         return gameObjects;
     }
 
     onPlayerBufEffectCollision(colObject, gameObjects) {
-        let {bufEffects, players} = gameObjects;
+        let { bufEffects, players } = gameObjects;
 
         const bufEffect = colObject.objectTwo;
         const player = colObject.objectOne;
@@ -233,7 +259,7 @@ module.exports = class Physics {
         }
 
         const indexPlayer = players.indexOf(player);
-        
+
         if (indexPlayer === -1) {
             console.log(`Player is not exists!`);
             return gameObjects;
@@ -263,7 +289,7 @@ module.exports = class Physics {
                 );
 
                 console.log(`Set timeout for bufEffect ${typeBufEffect} at ${bufEffects[indexBufEffect].time} ms`);
-                
+
                 this.startBufEffectTimer(typeBufEffect, nickname, time);
 
                 break;
@@ -295,7 +321,7 @@ module.exports = class Physics {
                     players[indexPlayer].actingBufEffects.splice(indexDoubleDamage, 1);
                 }
 
-                players[indexPlayer].actingBufEffects.push({name: typeBufEffect});
+                players[indexPlayer].actingBufEffects.push({ name: typeBufEffect });
 
                 console.log(`Set timeout for bufEffect ${typeBufEffect} at ${bufEffects[indexBufEffect].time} ms`);
 
@@ -326,7 +352,7 @@ module.exports = class Physics {
         bufEffects.splice(indexBufEffect, 1);
         gameObjects.bufEffects = bufEffects;
         gameObjects.players = players;
-        
+
         return gameObjects;
     }
 
@@ -354,8 +380,8 @@ module.exports = class Physics {
                 break;
             }
 
-            const timer = setTimeout(() => {this.core.onTimeoutBufEffects(nickname, typeBufEffect)}, time);
-            this.timers[nickname].push({typeBufEffect, timer});
+            const timer = setTimeout(() => { this.core.onTimeoutBufEffects(nickname, typeBufEffect) }, time);
+            this.timers[nickname].push({ typeBufEffect, timer });
         } catch (err) {
             console.log(err);
         }
@@ -380,9 +406,9 @@ module.exports = class Physics {
     }
 
     onStartPlayerSpeed(typeSpeed, player, coefSpeed, speed) {
-        if (Math.abs(player[typeSpeed]) + Math.abs(coefSpeed) > speed) { 
+        if (Math.abs(player[typeSpeed]) + Math.abs(coefSpeed) > speed) {
             let newSpeed;
-            
+
             if (coefSpeed > 0) {
                 newSpeed = 1;
             } else {

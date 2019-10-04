@@ -3,21 +3,21 @@
         "port": 44444
     },
     "gameEngine": {
-        "fps": 10,
+        "fps": 15,
         "numberBufEffects": 30
     },
     "gameSettings": {
         "objects": {
             "scene": {
                 "size": {
-                    "width": 3000,
-                    "height": 3000
+                    "width": 4000,
+                    "height": 4000
                 }
             },
             "players": {
                 "size": {
-                    "width": 70,
-                    "height": 70
+                    "width": 100,
+                    "height": 100
                 },
                 "speed": 4,
                 "health": 100
@@ -31,6 +31,7 @@
                     "speed": 10,
                     "rate": 10,
                     "damage": 8,
+                    "timeLife": 50,
                     "default": true,
                     "numberBullets": 0
                 },
@@ -42,6 +43,7 @@
                     "speed": 35,
                     "rate": 10,
                     "damage": 35,
+                    "timeLife": 50,
                     "default": false,
                     "numberBullets": 0
                 },
@@ -53,6 +55,7 @@
                     "speed": 30,
                     "rate": 80,
                     "damage": 3,
+                    "timeLife": 40,
                     "default": false,
                     "numberBullets": 0
                 },
@@ -64,6 +67,7 @@
                     "speed": 25,
                     "rate": 30,
                     "damage": 13,
+                    "timeLife": 150,
                     "default": false,
                     "numberBullets": 0
                 }
@@ -95,16 +99,16 @@
             "bufEffects": {
                 "medicine": {
                     "size": {
-                        "width": 30,
-                        "height": 30
+                        "width": 70,
+                        "height": 70
                     },
                     "interval": 15000,
                     "health": [50, 150]
                 },
                 "boostSpeed": {
                     "size": {
-                        "width": 30,
-                        "height": 30
+                        "width": 70,
+                        "height": 70
                     },
                     "interval": 17000,
                     "speed": [5, 10],
@@ -112,8 +116,8 @@
                 },
                 "boostRate": {
                     "size": {
-                        "width": 30,
-                        "height": 30
+                        "width": 70,
+                        "height": 70
                     },
                     "interval": 20000,
                     "rate": [10, 25],
@@ -121,40 +125,40 @@
                 },
                 "doubleDamage": {
                     "size": {
-                        "width": 30,
-                        "height": 30
+                        "width": 70,
+                        "height": 70
                     },
                     "interval": 40000,
                     "time": 15
                 },
                 "cartridgeBlaster": {
                     "size": {
-                        "width": 30,
-                        "height": 30
+                        "width": 70,
+                        "height": 70
                     },
                     "interval": 30000,
                     "numberBullets": [50, 250]
                 },
                 "cartridgePlazma": {
                     "size": {
-                        "width": 30,
-                        "height": 30
+                        "width": 70,
+                        "height": 70
                     },
                     "interval": 40000,
                     "numberBullets": [20, 100]
                 },
                 "cartridgeMiniGun": {
                     "size": {
-                        "width": 30,
-                        "height": 30
+                        "width": 70,
+                        "height": 70
                     },
                     "interval": 50000,
                     "numberBullets": [100, 300]
                 },
                 "cartridgeShotGun": {
                     "size": {
-                        "width": 30,
-                        "height": 30
+                        "width": 70,
+                        "height": 70
                     },
                     "interval": 65000,
                     "numberBullets": [10, 40]

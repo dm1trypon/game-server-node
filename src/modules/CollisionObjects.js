@@ -4,81 +4,81 @@ module.exports = class CollisionObjects {
     }
 
     getCollisionObjects(gameObjects) {
-        const {players, bullets, walls, bufEffects, scenes} = gameObjects;
+        const { players, bullets, walls, bufEffects, scenes } = gameObjects;
 
         let collisionObjectsArr = [];
 
         for (const player of players) {
-            const {posX: posOneX, posY: posOneY, width: wOne, height: hOne} = player;
+            const { posX: posOneX, posY: posOneY, width: wOne, height: hOne } = player;
 
             for (const anotherPlayer of players) {
                 if (anotherPlayer === player) {
                     continue;
                 }
 
-                const {posX: posTwoX, posY: posTwoY, width: wTwo, height: hTwo} = anotherPlayer;
+                const { posX: posTwoX, posY: posTwoY, width: wTwo, height: hTwo } = anotherPlayer;
 
-                if (!this.isCollision({posOneX, posOneY, wOne, hOne}, {posTwoX, posTwoY, wTwo, hTwo})) {
+                if (!this.isCollision({ posOneX, posOneY, wOne, hOne }, { posTwoX, posTwoY, wTwo, hTwo })) {
                     continue;
                 }
 
-                collisionObjectsArr.push({nameOne: 'player', objectOne: player, nameTwo: 'player', objectTwo: anotherPlayer});
+                collisionObjectsArr.push({ nameOne: 'player', objectOne: player, nameTwo: 'player', objectTwo: anotherPlayer });
             }
 
             for (const bullet of bullets) {
-                const {posX: posTwoX, posY: posTwoY, width: wTwo, height: hTwo} = bullet;
+                const { posX: posTwoX, posY: posTwoY, width: wTwo, height: hTwo } = bullet;
 
-                if (!this.isCollision({posOneX, posOneY, wOne, hOne}, {posTwoX, posTwoY, wTwo, hTwo})) {
+                if (!this.isCollision({ posOneX, posOneY, wOne, hOne }, { posTwoX, posTwoY, wTwo, hTwo })) {
                     continue;
                 }
 
-                collisionObjectsArr.push({nameOne: 'player', objectOne: player, nameTwo: 'bullet', objectTwo: bullet});
+                collisionObjectsArr.push({ nameOne: 'player', objectOne: player, nameTwo: 'bullet', objectTwo: bullet });
             }
 
             // - square collision ?????
             for (const wall of walls) {
-                const {posX: posTwoX, posY: posTwoY, width: wTwo, height: hTwo} = wall;
+                const { posX: posTwoX, posY: posTwoY, width: wTwo, height: hTwo } = wall;
 
-                if (!this.isCollision({posOneX, posOneY, wOne, hOne}, {posTwoX, posTwoY, wTwo, hTwo})) {
+                if (!this.isCollision({ posOneX, posOneY, wOne, hOne }, { posTwoX, posTwoY, wTwo, hTwo })) {
                     continue;
                 }
 
-                collisionObjectsArr.push({nameOne: 'player', objectOne: player, nameTwo: 'wall', objectTwo: wall});
+                collisionObjectsArr.push({ nameOne: 'player', objectOne: player, nameTwo: 'wall', objectTwo: wall });
             }
             //
 
             for (const bufEffect of bufEffects) {
-                const {posX: posTwoX, posY: posTwoY, width: wTwo, height: hTwo} = bufEffect;
+                const { posX: posTwoX, posY: posTwoY, width: wTwo, height: hTwo } = bufEffect;
 
-                if (!this.isCollision({posOneX, posOneY, wOne, hOne}, {posTwoX, posTwoY, wTwo, hTwo})) {
+                if (!this.isCollision({ posOneX, posOneY, wOne, hOne }, { posTwoX, posTwoY, wTwo, hTwo })) {
                     continue;
                 }
 
-                collisionObjectsArr.push({nameOne: 'player', objectOne: player, nameTwo: 'bufEffect', objectTwo: bufEffect});
+                collisionObjectsArr.push({ nameOne: 'player', objectOne: player, nameTwo: 'bufEffect', objectTwo: bufEffect });
             }
 
             for (const scene of scenes) {
-                const {posX: posTwoX, posY: posTwoY, width: wTwo, height: hTwo} = scene;
+                const { posX: posTwoX, posY: posTwoY, width: wTwo, height: hTwo } = scene;
 
-                if (!this.isSceneCollision({posOneX, posOneY, wOne, hOne}, {posTwoX, posTwoY, wTwo, hTwo})) {
+                if (!this.isSceneCollision({ posOneX, posOneY, wOne, hOne }, { posTwoX, posTwoY, wTwo, hTwo })) {
                     continue;
                 }
 
-                collisionObjectsArr.push({nameOne: 'player', objectOne: player, nameTwo: 'scene', objectTwo: scene});
+                collisionObjectsArr.push({ nameOne: 'player', objectOne: player, nameTwo: 'scene', objectTwo: scene });
             }
         }
 
         for (const bullet of bullets) {
-            const {posX: posOneX, posY: posOneY, width: wOne, height: hOne} = bullet;
+            const { posX: posOneX, posY: posOneY, width: wOne, height: hOne } = bullet;
 
             for (const scene of scenes) {
-                const {posX: posTwoX, posY: posTwoY, width: wTwo, height: hTwo} = scene;
+                const { posX: posTwoX, posY: posTwoY, width: wTwo, height: hTwo } = scene;
 
-                if (!this.isSceneCollision({posOneX, posOneY, wOne, hOne}, {posTwoX, posTwoY, wTwo, hTwo})) {
+                if (!this.isSceneCollision({ posOneX, posOneY, wOne, hOne }, { posTwoX, posTwoY, wTwo, hTwo })) {
                     continue;
                 }
 
-                collisionObjectsArr.push({nameOne: 'bullet', objectOne: bullet, nameTwo: 'scene', objectTwo: scene});
+                collisionObjectsArr.push({ nameOne: 'bullet', objectOne: bullet, nameTwo: 'scene', objectTwo: scene });
             }
         }
 
@@ -86,8 +86,8 @@ module.exports = class CollisionObjects {
     }
 
     isSceneCollision(objectOne, objectTwo) {
-        let {posOneX, posOneY, wOne, hOne} = objectOne;
-        let {posTwoX, posTwoY, wTwo, hTwo} = objectTwo;
+        let { posOneX, posOneY, wOne, hOne } = objectOne;
+        let { posTwoX, posTwoY, wTwo, hTwo } = objectTwo;
 
         if (posOneX < posTwoX || (posOneX + wOne) > (posTwoX + wTwo)) {
             return true;
@@ -101,9 +101,9 @@ module.exports = class CollisionObjects {
     }
 
     isCollision(objectOne, objectTwo) {
-        let {posOneX, posOneY, wOne, hOne} = objectOne;
-        let {posTwoX, posTwoY, wTwo, hTwo} = objectTwo;
-        
+        let { posOneX, posOneY, wOne, hOne } = objectOne;
+        let { posTwoX, posTwoY, wTwo, hTwo } = objectTwo;
+
         posOneX += wOne / 2;
         posOneY += hOne / 2;
 
