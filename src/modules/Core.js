@@ -403,7 +403,6 @@ module.exports = class Core {
         for (let bullet of bullets) {
             if (bullet.currentTimeLife > bullet.timeLife) {
                 bullets.splice(bullets.indexOf(bullet), 1);
-                console.log("Bullet die!");
                 continue;
             }
 
@@ -609,7 +608,8 @@ module.exports = class Core {
                 return;
             }
 
-            console.log('on stop');
+            console.log(`coefSpeed: ${coefSpeed}`)
+
             players[indexPlayer] = this.physics.onStopPlayerSpeed('speedX', players[indexPlayer], coefSpeed);
             this.gameObjects.setGameObject('players', players);
             setTimeout(() => process.nextTick(() => this.onControlSpeedX(nickname)), 100);
@@ -621,23 +621,14 @@ module.exports = class Core {
 
         for (const bufEffect of players[indexPlayer].actingBufEffects) {
             if (bufEffect.name === 'boostSpeed') {
-                console.log(`bufEffect.speed: ${bufEffect.speed}`);
                 bufSpeed += bufEffect.speed;
             }
         }
 
         const speedPlayer = players[indexPlayer].speed + bufSpeed;
 
-        if (Math.abs(players[indexPlayer]['speedX']) < speedPlayer) {
-            console.log('on start');
-            players[indexPlayer] = this.physics.onStartPlayerSpeed('speedX', players[indexPlayer], coefSpeed, speedPlayer);
-            this.gameObjects.setGameObject('players', players);
-            setTimeout(() => process.nextTick(() => this.onControlSpeedX(nickname)), 100);
-
-            return;
-        }
-
-        console.log(players[indexPlayer]['speedX']);
+        players[indexPlayer] = this.physics.onStartPlayerSpeed('speedX', players[indexPlayer], coefSpeed, speedPlayer);
+        this.gameObjects.setGameObject('players', players);
 
         setTimeout(() => process.nextTick(() => this.onControlSpeedX(nickname)), 100);
     }
@@ -687,22 +678,15 @@ module.exports = class Core {
 
         for (const bufEffect of players[indexPlayer].actingBufEffects) {
             if (bufEffect.name === 'boostSpeed') {
-                console.log(`bufEffect.speed: ${bufEffect.speed}`);
                 bufSpeed += bufEffect.speed;
             }
         }
 
         const speedPlayer = players[indexPlayer].speed + bufSpeed;
 
-        if (Math.abs(players[indexPlayer]['speedY']) < speedPlayer) {
-            console.log(players[indexPlayer]['speedY']);
-            players[indexPlayer] = this.physics.onStartPlayerSpeed('speedY', players[indexPlayer], coefSpeed, speedPlayer);
-            this.gameObjects.setGameObject('players', players);
-            setTimeout(() => process.nextTick(() => this.onControlSpeedY(nickname)), 100);
-
-            return;
-        }
-
+        players[indexPlayer] = this.physics.onStartPlayerSpeed('speedY', players[indexPlayer], coefSpeed, speedPlayer);
+        this.gameObjects.setGameObject('players', players);
+        
         setTimeout(() => process.nextTick(() => this.onControlSpeedY(nickname)), 100);
     }
 

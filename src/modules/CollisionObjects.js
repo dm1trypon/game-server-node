@@ -114,7 +114,7 @@ module.exports = class CollisionObjects {
         const distHeight = posOneY - posTwoY;
         const distance = Math.abs(Math.sqrt(distWidth * distWidth + distHeight * distHeight));
 
-        if (distance < wOne - wOne / 4) {
+        if (distance < wOne / 2 + wTwo / 2) {
             return true;
         }
 

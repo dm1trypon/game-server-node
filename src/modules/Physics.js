@@ -24,8 +24,6 @@ module.exports = class Physics {
     rules(colObject, gameObjects, objectsNames) {
         const type = `${objectsNames[0]}_${objectsNames[1]}`;
 
-        console.log(type);
-
         switch (type) {
             case 'player_bufEffect':
                 return this.onPlayerBufEffectCollision(colObject, gameObjects);
@@ -101,36 +99,8 @@ module.exports = class Physics {
             return gameObjects;
         }
 
-        // const pointCollisionObject = {
-        //     colX: Math.abs(players[indexPlayerOne].posX - players[indexPlayerTwo].posX),
-        //     colY: Math.abs(players[indexPlayerOne].posY - players[indexPlayerTwo].posY),
-        // };
-
-        if (players[indexPlayerOne].speedX > players[indexPlayerOne].speedY) {
-            if (!players[indexPlayerOne].statusKeys.up && !players[indexPlayerOne].statusKeys.down) {
-                players[indexPlayerOne].coefSpeedX *= -1;
-            }
-
-            players[indexPlayerOne].speedY = players[indexPlayerOne].speedY * (-1) + players[indexPlayerOne].coefSpeedY;
-            players[indexPlayerOne].posY += 3 * players[indexPlayerOne].speedY;
-        } else {
-            if (!players[indexPlayerOne].statusKeys.left && !players[indexPlayerOne].statusKeys.right) {
-                players[indexPlayerOne].coefSpeedX *= -1;
-            }
-
-            players[indexPlayerOne].speedX = players[indexPlayerOne].speedX * (-1) + players[indexPlayerOne].coefSpeedX;
-            players[indexPlayerOne].posX += 3 * players[indexPlayerOne].speedX;
-        }
-
-        if (players[indexPlayerOne].speedX === players[indexPlayerOne].speedY) {
-            players[indexPlayerOne].speedX = players[indexPlayerOne].speedX * (-1) + players[indexPlayerOne].coefSpeedX;
-            players[indexPlayerOne].coefSpeedX *= -1;
-            players[indexPlayerOne].posX += 3 * players[indexPlayerOne].speedY;
-
-            players[indexPlayerOne].speedY = players[indexPlayerOne].speedY * (-1) + players[indexPlayerOne].coefSpeedY;
-            players[indexPlayerOne].coefSpeedY *= -1;
-            players[indexPlayerOne].posY += 3 * players[indexPlayerOne].speedY;
-        }
+        players[indexPlayerOne].posX += -2 * players[indexPlayerOne].speedX;
+        players[indexPlayerOne].posY += -2 * players[indexPlayerOne].speedY;
 
         gameObjects.players = players;
 
