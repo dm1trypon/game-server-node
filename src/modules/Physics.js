@@ -44,7 +44,7 @@ module.exports = class Physics {
                 return this.onBulletSceneCollision(colObject, gameObjects);
 
             case 'bullet_wall':
-                break;
+                return this.onBulletWallCollision(colObject, gameObjects);
 
             default:
                 break;
@@ -126,13 +126,47 @@ module.exports = class Physics {
         const indexScene = scenes.indexOf(scene);
 
         if (indexScene === -1) {
-            console.log(`Scene is not exists!`);
+            console.log(`Wall is not exists!`);
             return gameObjects;
         }
 
         bullets.splice(indexBullet, 1);
 
         gameObjects.bullets = bullets;
+
+        return gameObjects;
+    }
+
+    onBulletWallCollision(colObject, gameObjects) {
+        let { bullets, walls } = gameObjects;
+
+        const bullet = colObject.objectOne;
+        const wall = colObject.objectTwo;
+
+        const indexBullet = bullets.indexOf(bullet);
+
+        if (indexBullet === -1) {
+            console.log(`Bullet is not exists!`);
+            return gameObjects;
+        }
+
+        const indexWall = walls.indexOf(wall);
+
+        if (indexWall === -1) {
+            console.log(`Scene is not exists!`);
+            return gameObjects;
+        }
+
+        walls[indexWall].life -= bullets[indexBullet].damage;
+
+        if (walls[indexWall].life <= 0) {
+            walls.splice(indexWall, 1);
+        }
+
+        bullets.splice(indexBullet, 1);
+
+        gameObjects.bullets = bullets;
+        gameObjects.walls = walls;
 
         return gameObjects;
     }

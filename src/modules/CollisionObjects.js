@@ -80,6 +80,16 @@ module.exports = class CollisionObjects {
 
                 collisionObjectsArr.push({ nameOne: 'bullet', objectOne: bullet, nameTwo: 'scene', objectTwo: scene });
             }
+
+            for (const wall of walls) {
+                const { posX: posTwoX, posY: posTwoY, width: wTwo, height: hTwo } = wall;
+
+                if (!this.isSquareCollision({ posOneX, posOneY, wOne, hOne }, { posTwoX, posTwoY, wTwo, hTwo })) {
+                    continue;
+                }
+
+                collisionObjectsArr.push({ nameOne: 'bullet', objectOne: bullet, nameTwo: 'wall', objectTwo: wall });
+            }
         }
 
         return collisionObjectsArr;

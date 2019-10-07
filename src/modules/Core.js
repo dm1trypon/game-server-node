@@ -204,8 +204,12 @@ module.exports = class Core {
     }
 
     createBufEffect(bufEffect) {
-        const { gameEngine: { numberBufEffects }, gameSettings: { objects: { scene: { size: sizeScene }, bufEffects } } } = this.config;
+        const { gameEngine: { numberBufEffects }, gameSettings: { objects: { scene: { size: sizeScene }, bufEffects, walls } } } = this.config;
         const { size: sizeBuf, time } = bufEffects[bufEffect];
+
+        const {
+            wallLow: { size: sizeLowWall},
+        } = walls;
 
         let bufEffectsArray = this.gameObjects.getGameObject('bufEffects');
 
@@ -214,11 +218,13 @@ module.exports = class Core {
             return;
         }
 
+        const { newPosX, newPosY } = this.getWallPosition({ widthWall: sizeLowWall.width, heightWall: sizeLowWall.height, widthScene: sizeScene.width, heightScene: sizeScene.height });
+
         let newBufEffect = {
             bufEffect,
             id: getRandomNumber(0, MAX_ID),
-            posX: getRandomNumber(0, sizeScene.width),
-            posY: getRandomNumber(0, sizeScene.height),
+            posX: newPosX,
+            posY: newPosY,
             width: sizeBuf.width,
             height: sizeBuf.height,
         }
@@ -713,8 +719,6 @@ module.exports = class Core {
     wallsGenerator() {
         const { gameSettings: { objects: { scene: { size: sizeScene }, walls: { numberWalls }, walls } } } = this.config;
 
-        console.log(numberWalls);
-
         const {
             wallLow: { size: sizeLowWall, life: lifeLowWall },
             wallHigh: { size: sizeHighWall, life: lifeHighWall },
@@ -727,7 +731,7 @@ module.exports = class Core {
             let heightWall = 0;
             let wallLife = 0;
 
-            switch (getRandomNumber(1, 3)) {
+            switch (getRandomNumber(1, 4)) {
                 case 1:
                     type = 'lowWall';
                     widthWall = sizeLowWall.width;

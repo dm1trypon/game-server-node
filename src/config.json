@@ -31,7 +31,7 @@
                     "speed": 10,
                     "rate": 10,
                     "damage": 8,
-                    "timeLife": 50,
+                    "timeLife": 100,
                     "default": true,
                     "numberBullets": 0
                 },
