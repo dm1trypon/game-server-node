@@ -39,7 +39,7 @@ module.exports = class CollisionObjects {
             for (const wall of walls) {
                 const { posX: posTwoX, posY: posTwoY, width: wTwo, height: hTwo } = wall;
 
-                if (!this.isCollision({ posOneX, posOneY, wOne, hOne }, { posTwoX, posTwoY, wTwo, hTwo })) {
+                if (!this.isSquareCollision({ posOneX, posOneY, wOne, hOne }, { posTwoX, posTwoY, wTwo, hTwo })) {
                     continue;
                 }
 
@@ -94,6 +94,18 @@ module.exports = class CollisionObjects {
         }
 
         if (posOneY < posTwoY || (posOneY + hOne) > (posTwoY + hTwo)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    isSquareCollision(objectOne, objectTwo) {
+        let { posOneX, posOneY, wOne, hOne } = objectOne;
+        let { posTwoX, posTwoY, wTwo, hTwo } = objectTwo;
+
+        if ((posOneX < posTwoX + wTwo && posOneX + wOne > posTwoX) &&
+            (posOneY < posTwoY + hTwo && (posOneY + hOne) > posTwoY)) {
             return true;
         }
 

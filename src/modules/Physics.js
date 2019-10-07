@@ -35,7 +35,7 @@ module.exports = class Physics {
                 return this.onPlayerBulletCollision(colObject, gameObjects);
 
             case 'player_wall':
-                break;
+                return this.onPlayerWallCollision(colObject, gameObjects);
 
             case 'player_scene':
                 return this.onPlayerSceneCollision(colObject, gameObjects);
@@ -43,9 +43,71 @@ module.exports = class Physics {
             case 'bullet_scene':
                 return this.onBulletSceneCollision(colObject, gameObjects);
 
+            case 'bullet_wall':
+                break;
+
             default:
                 break;
         }
+    }
+
+    onPlayerWallCollision(colObject, gameObjects) {
+        let { players, walls } = gameObjects;
+
+        const wall = colObject.objectTwo;
+        const player = colObject.objectOne;
+
+        const indexPlayer = players.indexOf(player);
+
+        if (indexPlayer === -1) {
+            console.log(`Player is not exists!`);
+            return gameObjects;
+        }
+
+        const indexWall = walls.indexOf(wall);
+
+        if (indexWall === -1) {
+            console.log(`Wall is not exists!`);
+            return gameObjects;
+        }
+
+        if (Math.abs(players[indexPlayer].posX - walls[indexWall].posX) > Math.abs(players[indexPlayer].posY - walls[indexWall].posY)) {
+            if (players[indexPlayer].posX + players[indexPlayer].width > walls[indexWall].posX + walls[indexWall].width / 2) {
+                if (!players[indexPlayer].statusKeys.left && !players[indexPlayer].statusKeys.right) {
+                    players[indexPlayer].coefSpeedX *= -1;
+                }
+    
+                players[indexPlayer].speedX = players[indexPlayer].speedX * (-1) + players[indexPlayer].coefSpeedX;
+                players[indexPlayer].posX = walls[indexWall].posX + walls[indexWall].width;
+            } else {
+                if (!player.statusKeys.left && !player.statusKeys.right) {
+                    players[indexPlayer].coefSpeedX *= -1;
+                }
+    
+                players[indexPlayer].speedX = players[indexPlayer].speedX * (-1) + players[indexPlayer].coefSpeedX;
+                players[indexPlayer].posX = walls[indexWall].posX - players[indexPlayer].width;
+            }
+        } else {
+            if (players[indexPlayer].posY + players[indexPlayer].height > walls[indexWall].posY + walls[indexWall].height / 2) {
+                if (!players[indexPlayer].statusKeys.up && !players[indexPlayer].statusKeys.down) {
+                    players[indexPlayer].coefSpeedY *= -1;
+                }
+    
+                players[indexPlayer].speedY = players[indexPlayer].speedY * (-1) + players[indexPlayer].coefSpeedY;
+                players[indexPlayer].posY = walls[indexWall].posY + walls[indexWall].height;
+            } else {
+                if (!players[indexPlayer].statusKeys.up && !players[indexPlayer].statusKeys.down) {
+                    players[indexPlayer].coefSpeedY *= -1;
+                }
+    
+                players[indexPlayer].speedY = players[indexPlayer].speedY * (-1) + players[indexPlayer].coefSpeedY;
+                players[indexPlayer].posY = walls[indexWall].posY - players[indexPlayer].height;
+            }
+        }
+
+        gameObjects.players = players;
+
+        return gameObjects;
     }
 
     onBulletSceneCollision(colObject, gameObjects) {

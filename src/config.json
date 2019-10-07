@@ -73,25 +73,25 @@
                 }
             },
             "walls": {
-                "numberWalls": 50,
+                "numberWalls": 250,
                 "wallLow": {
                     "size": {
-                        "width": 40,
-                        "height": 40
+                        "width": 120,
+                        "height": 120
                     },
                     "life": 30
                 },
                 "wallHigh": {
                     "size": {
-                        "width": 40,
-                        "height": 40
+                        "width": 120,
+                        "height": 120
                     },
                     "life": 100
                 },
                 "wallMax": {
                     "size": {
-                        "width": 40,
-                        "height": 40
+                        "width": 120,
+                        "height": 120
                     },
                     "life": 5000
                 }

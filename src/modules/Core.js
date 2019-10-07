@@ -42,6 +42,7 @@ module.exports = class Core {
         this.physics = new Physics(this);
 
         this.createScene();
+        this.wallsGenerator();
     }
 
     onTimeoutBufEffects(nickname, bufEffect) {
@@ -132,6 +133,25 @@ module.exports = class Core {
         bulletsArray.push(newBulletObj);
 
         this.gameObjects.setGameObject('bullets', bulletsArray);
+    }
+
+    createWall(dataObj) {
+        const walls = this.gameObjects.getGameObject('walls');
+        const { type, posX, posY, width, height, life } = dataObj;
+
+        const newWall = {
+            id: getRandomNumber(0, MAX_ID),
+            type,
+            posX,
+            posY,
+            life,
+            width,
+            height,
+        };
+
+        walls.push(newWall);
+
+        this.gameObjects.setGameObject('walls', walls);
     }
 
     createPlayer(dataObj, players) {
@@ -406,7 +426,7 @@ module.exports = class Core {
                 continue;
             }
 
-            bullet.currentTimeLife ++;
+            bullet.currentTimeLife++;
         }
 
         return bullets;
@@ -500,7 +520,7 @@ module.exports = class Core {
                     } else {
                         player.coefSpeedY = 1;
                     }
-                    
+
                     break;
                 }
 
@@ -686,11 +706,90 @@ module.exports = class Core {
 
         players[indexPlayer] = this.physics.onStartPlayerSpeed('speedY', players[indexPlayer], coefSpeed, speedPlayer);
         this.gameObjects.setGameObject('players', players);
-        
+
         setTimeout(() => process.nextTick(() => this.onControlSpeedY(nickname)), 100);
     }
 
     wallsGenerator() {
-        const { gameEngine: { numberBufEffects }, gameSettings: { objects: { scene: { size: sizeScene }, bufEffects } } } = this.config;
+        const { gameSettings: { objects: { scene: { size: sizeScene }, walls: { numberWalls }, walls } } } = this.config;
+
+        console.log(numberWalls);
+
+        const {
+            wallLow: { size: sizeLowWall, life: lifeLowWall },
+            wallHigh: { size: sizeHighWall, life: lifeHighWall },
+            wallMax: { size: sizeMaxWall, life: lifeMaxWall }
+        } = walls;
+
+        for (let wall = 0; wall < numberWalls; wall++) {
+            let type = '';
+            let widthWall = 0;
+            let heightWall = 0;
+            let wallLife = 0;
+
+            switch (getRandomNumber(1, 3)) {
+                case 1:
+                    type = 'lowWall';
+                    widthWall = sizeLowWall.width;
+                    heightWall = sizeLowWall.height;
+                    wallLife = lifeLowWall;
+                    break;
+
+                case 2:
+                    type = 'highWall';
+                    widthWall = sizeHighWall.width;
+                    heightWall = sizeHighWall.height;
+                    wallLife = lifeHighWall;
+                    break;
+
+                case 3:
+                    type = 'maxWall';
+                    widthWall = sizeMaxWall.width;
+                    heightWall = sizeMaxWall.height;
+                    wallLife = lifeMaxWall;
+                    break;
+
+                default:
+                    break;
+            }
+
+            const { newPosX, newPosY } = this.getWallPosition({ widthWall, heightWall, widthScene: sizeScene.width, heightScene: sizeScene.height });
+
+            const wallObj = {
+                type,
+                posX: newPosX,
+                posY: newPosY,
+                width: widthWall,
+                height: heightWall,
+                life: wallLife,
+            };
+
+            this.createWall(wallObj);
+        }
+    }
+
+    getWallPosition(dataObj) {
+        const walls = this.gameObjects.getGameObject('walls');
+
+        const { widthWall, heightWall, widthScene, heightScene } = dataObj;
+
+        const posX = getRandomNumber(0, widthScene);
+        const posY = getRandomNumber(0, heightScene);
+
+        const maxWallsWidth = Math.floor(posX / widthWall);
+        const maxWallsHeight = Math.floor(posY / heightWall);
+
+        const newPosX = maxWallsWidth * widthWall;
+        const newPosY = maxWallsHeight * heightWall;
+
+        for (const wall of walls) {
+            const { posX, posY } = wall;
+
+            if (posX === newPosX && posY === newPosY) {
+                return this.getWallPosition(dataObj);
+            }
+        }
+
+        return { newPosX, newPosY };
     }
 }
