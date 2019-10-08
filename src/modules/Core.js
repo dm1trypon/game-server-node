@@ -7,7 +7,6 @@ const { getRandomNumber } = require('./randomizer');
 
 module.exports = class Core {
     constructor(events, gameObjects) {
-        this.timers = [];
         this.events = events;
         this.gameObjects = gameObjects;
         this.config = Config.getInstance().getConfig();
@@ -49,6 +48,7 @@ module.exports = class Core {
         let players = this.gameObjects.getGameObject('players');
 
         for (let player of players) {
+            
             if (player.nickname !== nickname) {
                 continue;
             }
@@ -81,6 +81,7 @@ module.exports = class Core {
 
             case 'bufEffects':
                 this.createBufEffect(bufEffect);
+                break;
 
             default:
                 break;
@@ -106,18 +107,26 @@ module.exports = class Core {
     }
 
     createBullet(dataObj) {
-        const { nickname, clickPosX, clickPosY, playerPosX, playerPosY, playerWidth, playerHeight } = dataObj;
+        const { nickname, playerBufEffects, clickPosX, clickPosY, playerPosX, playerPosY, playerWidth, playerHeight, weapon } = dataObj;
         const { gameSettings: { objects: { bullets } } } = this.config;
-        const { speed, size, damage, timeLife } = bullets[this.defaultWeapon];
+        const { speed, size, damage, timeLife } = bullets[weapon];
 
-        let bulletsArray = this.gameObjects.getGameObject('bullets');
+        const bulletsArray = this.gameObjects.getGameObject('bullets');
 
         const { speedX, speedY } = this.getSpeedXY({ playerPosX, playerPosY, bulletSize: size, clickPosX, clickPosY, bulletSpeed: speed });
 
+        let doubleDamage = 1;
+
+        for (const bufEffect of playerBufEffects) {
+            if (bufEffect.name === 'doubleDamage') {
+                doubleDamage = 2;
+            }
+        }
+
         const newBulletObj = {
-            weapon: this.defaultWeapon,
+            weapon,
             nickname,
-            idBullet: getRandomNumber(0, MAX_ID),
+            id: getRandomNumber(0, MAX_ID),
             posX: playerPosX + playerWidth / 2 - size.width / 2,
             posY: playerPosY + playerHeight / 2 - size.height / 2,
             width: size.width,
@@ -125,7 +134,7 @@ module.exports = class Core {
             speedX,
             speedY,
             speed,
-            damage,
+            damage: damage * doubleDamage,
             currentTimeLife: 0,
             timeLife,
         }
@@ -156,7 +165,11 @@ module.exports = class Core {
 
     createPlayer(dataObj, players) {
         const { nickname, idClient } = dataObj;
-        const { gameSettings: { objects: { scene: { size: sizeScene }, players: { size: sizePlayers, speed, health }, bullets } } } = this.config;
+        const {
+            gameSettings: { 
+                objects: { scene: { size: sizeScene }, players: { size: sizePlayers, speed, health }, bullets, walls }
+            },
+        } = this.config;
         const { rate: rateFire } = bullets[this.defaultWeapon];
         const weaponNumberBullet = {};
 
@@ -164,13 +177,24 @@ module.exports = class Core {
             weaponNumberBullet[key] = 0;
         }
 
+        const {
+            wallLow: { size: sizeLowWall },
+        } = walls;
+
+        const { newPosX, newPosY } = this.getPositionObject({
+            widthWall: sizeLowWall.width,
+            heightWall: sizeLowWall.height,
+            widthScene: sizeScene.width,
+            heightScene: sizeScene.height
+        });
+
         const newPlayerObj = {
             nickname,
             idClient,
             health,
             weapon: this.defaultWeapon,
-            posX: getRandomNumber(0, sizeScene.width),
-            posY: getRandomNumber(0, sizeScene.height),
+            posX: newPosX + (sizeLowWall.width / 2 - sizePlayers.width / 2),
+            posY: newPosY + (sizeLowWall.height / 2 - sizePlayers.height / 2),
             width: sizePlayers.width,
             height: sizePlayers.height,
             speedX: 0,
@@ -204,11 +228,15 @@ module.exports = class Core {
     }
 
     createBufEffect(bufEffect) {
-        const { gameEngine: { numberBufEffects }, gameSettings: { objects: { scene: { size: sizeScene }, bufEffects, walls } } } = this.config;
+        const {
+            gameEngine: { numberBufEffects },
+            gameSettings: { objects: { scene: { size: sizeScene }, bufEffects, walls } }
+        } = this.config;
+
         const { size: sizeBuf, time } = bufEffects[bufEffect];
 
         const {
-            wallLow: { size: sizeLowWall},
+            wallLow: { size: sizeLowWall },
         } = walls;
 
         let bufEffectsArray = this.gameObjects.getGameObject('bufEffects');
@@ -218,13 +246,18 @@ module.exports = class Core {
             return;
         }
 
-        const { newPosX, newPosY } = this.getWallPosition({ widthWall: sizeLowWall.width, heightWall: sizeLowWall.height, widthScene: sizeScene.width, heightScene: sizeScene.height });
+        const { newPosX, newPosY } = this.getPositionObject({
+            widthWall: sizeLowWall.width,
+            heightWall: sizeLowWall.height,
+            widthScene: sizeScene.width,
+            heightScene: sizeScene.height
+        });
 
         let newBufEffect = {
             bufEffect,
             id: getRandomNumber(0, MAX_ID),
-            posX: newPosX,
-            posY: newPosY,
+            posX: newPosX + sizeLowWall.width / 2 - sizeBuf.width / 2,
+            posY: newPosY + sizeLowWall.height / 2 - sizeBuf.height / 2,
             width: sizeBuf.width,
             height: sizeBuf.height,
         }
@@ -272,8 +305,8 @@ module.exports = class Core {
                 break;
 
             default:
+                console.log(`Unknown bufEffect ${bufEffect}!`);
                 break;
-
         }
 
         bufEffectsArray.push(newBufEffect);
@@ -303,13 +336,20 @@ module.exports = class Core {
         const bufEffects = this.gameObjects.getGameObject('bufEffects');
         const scenes = this.gameObjects.getGameObject('scenes');
 
-        const collisionObjectsArr = this.collisionObjects.getCollisionObjects({ players, bullets, walls, bufEffects, scenes });
+        const collisionObjectsArr = this.collisionObjects.getCollisionObjects({
+            players,
+            bullets,
+            walls,
+            bufEffects,
+            scenes,
+        });
 
         if (!collisionObjectsArr.length) {
             return;
         }
 
-        const newGameObjects = this.physics.process(collisionObjectsArr, { players, bullets, walls, bufEffects, scenes });
+        const newGameObjects = this.physics.process(collisionObjectsArr,
+            { players, bullets, walls, bufEffects, scenes });
 
         for (const key of Object.keys(newGameObjects)) {
             this.gameObjects.setGameObject(key, newGameObjects[key]);
@@ -348,11 +388,21 @@ module.exports = class Core {
                 playerPosY: players[indexPlayer].posY,
                 playerWidth: players[indexPlayer].width,
                 playerHeight: players[indexPlayer].height,
+                playerBufEffects: players[indexPlayer].actingBufEffects,
+                weapon: players[indexPlayer].weapon,
             }, dataObj));
 
             players[indexPlayer].isRateFire = false;
 
-            setTimeout(() => { players[indexPlayer].isRateFire = true }, players[indexPlayer].rateFire * 10);
+            let boostRate = 0;
+
+            for (const bufEffect of players[indexPlayer].actingBufEffects) {
+                if (bufEffect.name === 'boostRate') {
+                    boostRate = bufEffect.rate;
+                }
+            }
+
+            setTimeout(() => { players[indexPlayer].isRateFire = true }, (players[indexPlayer].rateFire - boostRate) * 10);
         }
 
         this.gameObjects.setGameObject('players', players);
@@ -406,17 +456,7 @@ module.exports = class Core {
     onNextFrame() {
         this.process();
 
-        let players = this.gameObjects.getGameObject('players');
-        let newPlayers = [];
-
-        for (const player of players) {
-            let newPlayer = Object.assign({}, player);
-            delete newPlayer.timers;
-            newPlayers.push(newPlayer);
-        }
-
-        players = newPlayers;
-
+        const players = this.gameObjects.getGameObject('players');
         const bullets = this.gameObjects.getGameObject('bullets');
         const walls = this.gameObjects.getGameObject('walls');
         const bufEffects = this.gameObjects.getGameObject('bufEffects');
@@ -492,10 +532,6 @@ module.exports = class Core {
         if (this.isNotAcceptRulesKeys(players[index].controlKeys, key, isHold)) {
             console.log(`Key ${key} is not accept rules keys. Pressed keys: ${JSON.stringify(players[index].controlKeys)}`);
             return;
-        }
-
-        if (players[index].controlKeys.length > 1) {
-            // this.motionDistribution(players[index], players[index].controlKeys[0], false);
         }
 
         if (isHold) {
@@ -757,7 +793,7 @@ module.exports = class Core {
                     break;
             }
 
-            const { newPosX, newPosY } = this.getWallPosition({ widthWall, heightWall, widthScene: sizeScene.width, heightScene: sizeScene.height });
+            const { newPosX, newPosY } = this.getPositionObject({ widthWall, heightWall, widthScene: sizeScene.width, heightScene: sizeScene.height });
 
             const wallObj = {
                 type,
@@ -772,7 +808,7 @@ module.exports = class Core {
         }
     }
 
-    getWallPosition(dataObj) {
+    getPositionObject(dataObj) {
         const walls = this.gameObjects.getGameObject('walls');
 
         const { widthWall, heightWall, widthScene, heightScene } = dataObj;
@@ -790,7 +826,7 @@ module.exports = class Core {
             const { posX, posY } = wall;
 
             if (posX === newPosX && posY === newPosY) {
-                return this.getWallPosition(dataObj);
+                return this.getPositionObject(dataObj);
             }
         }
 
