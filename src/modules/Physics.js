@@ -46,6 +46,9 @@ module.exports = class Physics {
             case 'bullet_wall':
                 return this.onBulletWallCollision(colObject, gameObjects);
 
+            case 'bullet_bullet':
+                return this.onBulletsCollision(colObject, gameObjects);
+
             default:
                 break;
         }
@@ -73,6 +76,14 @@ module.exports = class Physics {
 
         if (Math.abs(players[indexPlayer].posX - walls[indexWall].posX) > Math.abs(players[indexPlayer].posY - walls[indexWall].posY)) {
             if (players[indexPlayer].posX + players[indexPlayer].width > walls[indexWall].posX + walls[indexWall].width / 2) {
+                if (players[indexPlayer].speedX === -1) {
+                    // players[indexPlayer].statusKeys.left = false;
+                    players[indexPlayer].speedX = 0;
+                    // players[indexPlayer].coefSpeedX *= -1;
+                    players[indexPlayer].posX = walls[indexWall].posX + walls[indexWall].width;
+                    return gameObjects;
+                }
+
                 if (!players[indexPlayer].statusKeys.left && !players[indexPlayer].statusKeys.right) {
                     players[indexPlayer].coefSpeedX *= -1;
                 }
@@ -80,6 +91,14 @@ module.exports = class Physics {
                 players[indexPlayer].speedX = players[indexPlayer].speedX * (-1) + players[indexPlayer].coefSpeedX;
                 players[indexPlayer].posX = walls[indexWall].posX + walls[indexWall].width;
             } else {
+                if (players[indexPlayer].speedX === 1) {
+                    // players[indexPlayer].statusKeys.right = false;
+                    players[indexPlayer].speedX = 0;
+                    // players[indexPlayer].coefSpeedX *= -1;
+                    players[indexPlayer].posX = walls[indexWall].posX - players[indexPlayer].width;
+                    return gameObjects;
+                }
+
                 if (!player.statusKeys.left && !player.statusKeys.right) {
                     players[indexPlayer].coefSpeedX *= -1;
                 }
@@ -89,6 +108,13 @@ module.exports = class Physics {
             }
         } else {
             if (players[indexPlayer].posY + players[indexPlayer].height > walls[indexWall].posY + walls[indexWall].height / 2) {
+                if (players[indexPlayer].speedY === -1) {
+                    // players[indexPlayer].statusKeys.up = false;
+                    players[indexPlayer].speedY = 0;
+                    players[indexPlayer].posY = walls[indexWall].posY + walls[indexWall].height;
+                    return gameObjects;
+                }
+
                 if (!players[indexPlayer].statusKeys.up && !players[indexPlayer].statusKeys.down) {
                     players[indexPlayer].coefSpeedY *= -1;
                 }
@@ -96,6 +122,13 @@ module.exports = class Physics {
                 players[indexPlayer].speedY = players[indexPlayer].speedY * (-1) + players[indexPlayer].coefSpeedY;
                 players[indexPlayer].posY = walls[indexWall].posY + walls[indexWall].height;
             } else {
+                if (players[indexPlayer].speedY === 1) {
+                    // players[indexPlayer].statusKeys.down = false;
+                    players[indexPlayer].speedY = 0;
+                    players[indexPlayer].posY = walls[indexWall].posY - players[indexPlayer].height;
+                    return gameObjects;
+                }
+
                 if (!players[indexPlayer].statusKeys.up && !players[indexPlayer].statusKeys.down) {
                     players[indexPlayer].coefSpeedY *= -1;
                 }
@@ -167,6 +200,49 @@ module.exports = class Physics {
 
         gameObjects.bullets = bullets;
         gameObjects.walls = walls;
+
+        return gameObjects;
+    }
+
+    onBulletsCollision(colObject, gameObjects) {
+        let { bullets } = gameObjects;
+
+        const bulletOne = colObject.objectTwo;
+        const bulletTwo = colObject.objectOne;
+
+        const indexBulletOne = bullets.indexOf(bulletOne);
+
+        if (indexBulletOne === -1) {
+            console.log(`Player is not exists!`);
+            return gameObjects;
+        }
+
+        const indexBulletTwo = bullets.indexOf(bulletTwo);
+
+        if (indexBulletTwo === -1) {
+            console.log(`Player is not exists!`);
+            return gameObjects;
+        }
+
+        if (bulletOne.nickname === bulletTwo.nickname) {
+            return gameObjects;
+        }
+
+        const damageOne = bullets[indexBulletOne].damage;
+        const damageTwo = bullets[indexBulletTwo].damage;
+
+        bullets[indexBulletOne].damage -= damageOne;
+        bullets[indexBulletTwo].damage -= damageTwo;
+
+        if (bullets[indexBulletOne].damage <= 0) {
+            bullets.splice(indexBulletOne, 1);
+        }
+
+        if (bullets[indexBulletTwo].damage <= 0) {
+            bullets.splice(indexBulletTwo, 1);
+        }
+
+        gameObjects.bullets = bullets;
 
         return gameObjects;
     }

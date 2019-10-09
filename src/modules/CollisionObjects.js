@@ -35,7 +35,6 @@ module.exports = class CollisionObjects {
                 collisionObjectsArr.push({ nameOne: 'player', objectOne: player, nameTwo: 'bullet', objectTwo: bullet });
             }
 
-            // - square collision ?????
             for (const wall of walls) {
                 const { posX: posTwoX, posY: posTwoY, width: wTwo, height: hTwo } = wall;
 
@@ -45,7 +44,6 @@ module.exports = class CollisionObjects {
 
                 collisionObjectsArr.push({ nameOne: 'player', objectOne: player, nameTwo: 'wall', objectTwo: wall });
             }
-            //
 
             for (const bufEffect of bufEffects) {
                 const { posX: posTwoX, posY: posTwoY, width: wTwo, height: hTwo } = bufEffect;
@@ -89,6 +87,20 @@ module.exports = class CollisionObjects {
                 }
 
                 collisionObjectsArr.push({ nameOne: 'bullet', objectOne: bullet, nameTwo: 'wall', objectTwo: wall });
+            }
+
+            for (const anotherBullet of bullets) {
+                if (anotherBullet === bullet) {
+                    continue;
+                }
+
+                const { posX: posTwoX, posY: posTwoY, width: wTwo, height: hTwo } = anotherBullet;
+
+                if (!this.isCollision({ posOneX, posOneY, wOne, hOne }, { posTwoX, posTwoY, wTwo, hTwo })) {
+                    continue;
+                }
+
+                collisionObjectsArr.push({ nameOne: 'bullet', objectOne: bullet, nameTwo: 'bullet', objectTwo: anotherBullet });
             }
         }
 

@@ -167,7 +167,7 @@ module.exports = class Core {
         const { nickname, idClient } = dataObj;
         const {
             gameSettings: { 
-                objects: { scene: { size: sizeScene }, players: { size: sizePlayers, speed, health }, bullets, walls }
+                objects: { scene: { size: sizeScene }, players: { size: sizePlayers, speed, health }, bullets, walls },
             },
         } = this.config;
         const { rate: rateFire } = bullets[this.defaultWeapon];
@@ -208,6 +208,8 @@ module.exports = class Core {
                 left: false,
                 right: false,
             },
+            hasStopedX: false,
+            hasStopedY: false,
             controlKeys: [],
             currentSpeed: 0,
             rateFire,
@@ -529,6 +531,12 @@ module.exports = class Core {
             return;
         }
 
+        // const indexKey = players[index].controlKeys.indexOf(key);
+
+        // if (indexKey !== -1) {
+        //     players[index].controlKeys.splice(indexKey, 1, key);
+        // }
+
         if (this.isNotAcceptRulesKeys(players[index].controlKeys, key, isHold)) {
             console.log(`Key ${key} is not accept rules keys. Pressed keys: ${JSON.stringify(players[index].controlKeys)}`);
             return;
@@ -556,6 +564,7 @@ module.exports = class Core {
                 if (!isHold) {
                     player.controlKeys.splice(player.controlKeys.indexOf(key), 1);
                     player.statusKeys.up = false;
+                    player.hasStopedY = true;
 
                     if (player.speedY > 0) {
                         player.coefSpeedY = -1;
@@ -575,6 +584,7 @@ module.exports = class Core {
                 if (!isHold) {
                     player.controlKeys.splice(player.controlKeys.indexOf(key), 1);
                     player.statusKeys.down = false;
+                    player.hasStopedY = true;
 
                     if (player.speedY > 0) {
                         player.coefSpeedY = -1;
@@ -594,6 +604,7 @@ module.exports = class Core {
                 if (!isHold) {
                     player.controlKeys.splice(player.controlKeys.indexOf(key), 1);
                     player.statusKeys.left = false;
+                    player.hasStopedX = true;
 
                     if (player.speedX > 0) {
                         player.coefSpeedX = -1;
@@ -613,6 +624,7 @@ module.exports = class Core {
                 if (!isHold) {
                     player.controlKeys.splice(player.controlKeys.indexOf(key), 1);
                     player.statusKeys.right = false;
+                    player.hasStopedX = true;
 
                     if (player.speedX > 0) {
                         player.coefSpeedX = -1;
@@ -657,10 +669,18 @@ module.exports = class Core {
 
         let isStop = false;
 
-        if (!players[indexPlayer].statusKeys.left && !players[indexPlayer].statusKeys.right) {
+        if (players[indexPlayer].hasStopedX) {
             isStop = true;
         }
 
+        if (!players[indexPlayer].speedX) {
+            players[indexPlayer].hasStopedX = false;
+        }
+
+        if (!players[indexPlayer].statusKeys.left && !players[indexPlayer].statusKeys.right) {
+            isStop = true;
+        }
+        
         let coefSpeed = players[indexPlayer].coefSpeedX;
 
         if (isStop) {
@@ -670,10 +690,9 @@ module.exports = class Core {
                 return;
             }
 
-            console.log(`coefSpeed: ${coefSpeed}`)
-
             players[indexPlayer] = this.physics.onStopPlayerSpeed('speedX', players[indexPlayer], coefSpeed);
             this.gameObjects.setGameObject('players', players);
+            players[indexPlayer].hasStopedX = false;
             setTimeout(() => process.nextTick(() => this.onControlSpeedX(nickname)), 100);
 
             return;
@@ -716,6 +735,14 @@ module.exports = class Core {
 
         let isStop = false;
 
+        if (players[indexPlayer].hasStopedY) {
+            isStop = true;
+        }
+
+        if (!players[indexPlayer].speedX) {
+            players[indexPlayer].hasStopedY = false;
+        }
+
         if (!players[indexPlayer].statusKeys.up && !players[indexPlayer].statusKeys.down) {
             isStop = true;
         }
@@ -731,6 +758,7 @@ module.exports = class Core {
 
             players[indexPlayer] = this.physics.onStopPlayerSpeed('speedY', players[indexPlayer], coefSpeed);
             this.gameObjects.setGameObject('players', players);
+            players[indexPlayer].hasStopedY = false;
             setTimeout(() => process.nextTick(() => this.onControlSpeedY(nickname)), 100);
 
             return;
@@ -821,6 +849,14 @@ module.exports = class Core {
 
         const newPosX = maxWallsWidth * widthWall;
         const newPosY = maxWallsHeight * heightWall;
+
+        if (newPosX + widthWall >= widthScene) {
+            return this.getPositionObject(dataObj);
+        }
+
+        if (newPosY + heightWall >= heightScene) {
+            return this.getPositionObject(dataObj);
+        }
 
         for (const wall of walls) {
             const { posX, posY } = wall;
