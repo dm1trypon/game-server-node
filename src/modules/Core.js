@@ -225,8 +225,7 @@ module.exports = class Core {
 
         this.gameObjects.setGameObject('players', players);
         this.physics.initTimer(nickname);
-        this.onControlSpeedX(nickname);
-        this.onControlSpeedY(nickname);
+        this.onPlayerControlSpeed(nickname);
     }
 
     createBufEffect(bufEffect) {
@@ -531,12 +530,6 @@ module.exports = class Core {
             return;
         }
 
-        // const indexKey = players[index].controlKeys.indexOf(key);
-
-        // if (indexKey !== -1) {
-        //     players[index].controlKeys.splice(indexKey, 1, key);
-        // }
-
         if (this.isNotAcceptRulesKeys(players[index].controlKeys, key, isHold)) {
             console.log(`Key ${key} is not accept rules keys. Pressed keys: ${JSON.stringify(players[index].controlKeys)}`);
             return;
@@ -559,96 +552,63 @@ module.exports = class Core {
     }
 
     motionDistribution(player, key, isHold) {
-        switch (key) {
-            case 'up':
-                if (!isHold) {
-                    player.controlKeys.splice(player.controlKeys.indexOf(key), 1);
-                    player.statusKeys.up = false;
-                    player.hasStopedY = true;
+        if (player.controlKeys.includes('left') && player.controlKeys.length === 1) {
+            console.log('left');
+            player.maxSpeedX = - player.speed;
+            player.maxSpeedY = 0;
+        }
 
-                    if (player.speedY > 0) {
-                        player.coefSpeedY = -1;
-                    } else {
-                        player.coefSpeedY = 1;
-                    }
+        if (player.controlKeys.includes('right') && player.controlKeys.length === 1) {
+            player.maxSpeedX = player.speed;
+            player.maxSpeedY = 0;
+        }
 
-                    break;
-                }
+        if (player.controlKeys.includes('up') && player.controlKeys.length === 1) {
+            player.maxSpeedX = 0;
+            player.maxSpeedY = - player.speed;
+        }
 
-                player.statusKeys.up = true;
-                player.coefSpeedY = -1;
+        if (player.controlKeys.includes('down') && player.controlKeys.length === 1) {
+            player.maxSpeedX = 0;
+            player.maxSpeedY = player.speed;
+        }
 
-                break;
+        if (player.controlKeys.includes('left') && player.controlKeys.includes('up')) {
+            player.maxSpeedX = - player.speed;
+            player.maxSpeedY = - player.speed;
+        }
 
-            case 'down':
-                if (!isHold) {
-                    player.controlKeys.splice(player.controlKeys.indexOf(key), 1);
-                    player.statusKeys.down = false;
-                    player.hasStopedY = true;
+        if (player.controlKeys.includes('left') && player.controlKeys.includes('down')) {
+            player.maxSpeedX = - player.speed;
+            player.maxSpeedY = player.speed;
+        }
 
-                    if (player.speedY > 0) {
-                        player.coefSpeedY = -1;
-                    } else {
-                        player.coefSpeedY = 1;
-                    }
+        if (player.controlKeys.includes('right') && player.controlKeys.includes('up')) {
+            player.maxSpeedX = player.speed;
+            player.maxSpeedY = - player.speed;
+        }
 
-                    break;
-                }
+        if (player.controlKeys.includes('right') && player.controlKeys.includes('down')) {
+            player.maxSpeedX = player.speed;
+            player.maxSpeedY = player.speed;
+        }
 
-                player.statusKeys.down = true;
-                player.coefSpeedY = 1;
+        if (!isHold) {
+            player.controlKeys.splice(player.controlKeys.indexOf(key), 1);
 
-                break;
-
-            case 'left':
-                if (!isHold) {
-                    player.controlKeys.splice(player.controlKeys.indexOf(key), 1);
-                    player.statusKeys.left = false;
-                    player.hasStopedX = true;
-
-                    if (player.speedX > 0) {
-                        player.coefSpeedX = -1;
-                    } else {
-                        player.coefSpeedX = 1;
-                    }
-
-                    break;
-                }
-
-                player.statusKeys.left = true;
-                player.coefSpeedX = -1;
-
-                break;
-
-            case 'right':
-                if (!isHold) {
-                    player.controlKeys.splice(player.controlKeys.indexOf(key), 1);
-                    player.statusKeys.right = false;
-                    player.hasStopedX = true;
-
-                    if (player.speedX > 0) {
-                        player.coefSpeedX = -1;
-                    } else {
-                        player.coefSpeedX = 1;
-                    }
-
-                    break;
-                }
-
-                player.statusKeys.right = true;
-                player.coefSpeedX = 1;
-
-                break;
-
-
-            default:
-                break;
+            if (key === 'left' || key === 'right') {
+                player.maxSpeedX = 0;
+            }
+            
+            if (key === 'up' || key === 'down') {
+                player.maxSpeedY = 0;
+            }
         }
 
         return player;
     }
 
-    onControlSpeedX(nickname) {
+    onPlayerControlSpeed(nickname) {
         let players = this.gameObjects.getGameObject('players');
         let indexPlayer = -1;
 
@@ -667,117 +627,10 @@ module.exports = class Core {
             return;
         }
 
-        let isStop = false;
-
-        if (players[indexPlayer].hasStopedX) {
-            isStop = true;
-        }
-
-        if (!players[indexPlayer].speedX) {
-            players[indexPlayer].hasStopedX = false;
-        }
-
-        if (!players[indexPlayer].statusKeys.left && !players[indexPlayer].statusKeys.right) {
-            isStop = true;
-        }
-        
-        let coefSpeed = players[indexPlayer].coefSpeedX;
-
-        if (isStop) {
-            if (Math.abs(players[indexPlayer]['speedX']) < 1) {
-                setTimeout(() => process.nextTick(() => this.onControlSpeedX(nickname)), 100);
-
-                return;
-            }
-
-            players[indexPlayer] = this.physics.onStopPlayerSpeed('speedX', players[indexPlayer], coefSpeed);
-            this.gameObjects.setGameObject('players', players);
-            players[indexPlayer].hasStopedX = false;
-            setTimeout(() => process.nextTick(() => this.onControlSpeedX(nickname)), 100);
-
-            return;
-        }
-
-        let bufSpeed = 0;
-
-        for (const bufEffect of players[indexPlayer].actingBufEffects) {
-            if (bufEffect.name === 'boostSpeed') {
-                bufSpeed += bufEffect.speed;
-            }
-        }
-
-        const speedPlayer = players[indexPlayer].speed + bufSpeed;
-
-        players[indexPlayer] = this.physics.onStartPlayerSpeed('speedX', players[indexPlayer], coefSpeed, speedPlayer);
+        players[indexPlayer] = this.physics.speedControl(players[indexPlayer]);
         this.gameObjects.setGameObject('players', players);
 
-        setTimeout(() => process.nextTick(() => this.onControlSpeedX(nickname)), 100);
-    }
-
-    onControlSpeedY(nickname) {
-        let players = this.gameObjects.getGameObject('players');
-        let indexPlayer = -1;
-
-        for (const playerObj of players) {
-            if (playerObj.nickname !== nickname) {
-                continue;
-            }
-
-            indexPlayer = players.indexOf(playerObj);
-
-            break;
-        }
-
-        if (indexPlayer === -1) {
-            console.log(`Player ${nickname} is not found in game objects!`);
-            return;
-        }
-
-        let isStop = false;
-
-        if (players[indexPlayer].hasStopedY) {
-            isStop = true;
-        }
-
-        if (!players[indexPlayer].speedX) {
-            players[indexPlayer].hasStopedY = false;
-        }
-
-        if (!players[indexPlayer].statusKeys.up && !players[indexPlayer].statusKeys.down) {
-            isStop = true;
-        }
-
-        const coefSpeed = players[indexPlayer].coefSpeedY;
-
-        if (isStop) {
-            if (!Math.abs(players[indexPlayer]['speedY'])) {
-                setTimeout(() => process.nextTick(() => this.onControlSpeedY(nickname)), 100);
-
-                return;
-            }
-
-            players[indexPlayer] = this.physics.onStopPlayerSpeed('speedY', players[indexPlayer], coefSpeed);
-            this.gameObjects.setGameObject('players', players);
-            players[indexPlayer].hasStopedY = false;
-            setTimeout(() => process.nextTick(() => this.onControlSpeedY(nickname)), 100);
-
-            return;
-        }
-
-        let bufSpeed = 0;
-
-        for (const bufEffect of players[indexPlayer].actingBufEffects) {
-            if (bufEffect.name === 'boostSpeed') {
-                bufSpeed += bufEffect.speed;
-            }
-        }
-
-        const speedPlayer = players[indexPlayer].speed + bufSpeed;
-
-        players[indexPlayer] = this.physics.onStartPlayerSpeed('speedY', players[indexPlayer], coefSpeed, speedPlayer);
-        this.gameObjects.setGameObject('players', players);
-
-        setTimeout(() => process.nextTick(() => this.onControlSpeedY(nickname)), 100);
+        setTimeout(() => process.nextTick(() => this.onPlayerControlSpeed(nickname)), 50);
     }
 
     wallsGenerator() {

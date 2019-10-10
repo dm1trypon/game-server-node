@@ -74,69 +74,114 @@ module.exports = class Physics {
             return gameObjects;
         }
 
+        console.log(Math.abs(players[indexPlayer].posX - walls[indexWall].posX), Math.abs(players[indexPlayer].posY - walls[indexWall].posY));
+
         if (Math.abs(players[indexPlayer].posX - walls[indexWall].posX) > Math.abs(players[indexPlayer].posY - walls[indexWall].posY)) {
+            // console.log('1', players[indexPlayer].posX, players[indexPlayer].posY, walls[indexWall].posX, walls[indexWall].posY);
             if (players[indexPlayer].posX + players[indexPlayer].width > walls[indexWall].posX + walls[indexWall].width / 2) {
-                if (players[indexPlayer].speedX === -1) {
-                    // players[indexPlayer].statusKeys.left = false;
-                    players[indexPlayer].speedX = 0;
-                    // players[indexPlayer].coefSpeedX *= -1;
+                if (!players[indexPlayer].speedX) {
                     players[indexPlayer].posX = walls[indexWall].posX + walls[indexWall].width;
+                    // players[indexPlayer].posX = walls[indexWall].posX + walls[indexWall].width + 1;
+                    gameObjects.players = players;
                     return gameObjects;
                 }
 
-                if (!players[indexPlayer].statusKeys.left && !players[indexPlayer].statusKeys.right) {
-                    players[indexPlayer].coefSpeedX *= -1;
+                if (players[indexPlayer].speedX > 0) {
+                    players[indexPlayer].speedX--;
                 }
-    
-                players[indexPlayer].speedX = players[indexPlayer].speedX * (-1) + players[indexPlayer].coefSpeedX;
+
+                if (players[indexPlayer].speedX < 0) {
+                    players[indexPlayer].speedX++;
+                }
+
+                players[indexPlayer].speedX *= -1;
                 players[indexPlayer].posX = walls[indexWall].posX + walls[indexWall].width;
-            } else {
-                if (players[indexPlayer].speedX === 1) {
-                    // players[indexPlayer].statusKeys.right = false;
-                    players[indexPlayer].speedX = 0;
-                    // players[indexPlayer].coefSpeedX *= -1;
+
+                gameObjects.players = players;
+                return gameObjects;
+            }
+
+            if (players[indexPlayer].posX + players[indexPlayer].width < walls[indexWall].posX + walls[indexWall].width / 2) {
+                if (!players[indexPlayer].speedX) {
                     players[indexPlayer].posX = walls[indexWall].posX - players[indexPlayer].width;
+                    // players[indexPlayer].posX = walls[indexWall].posX - players[indexPlayer].width + 1;
+                    gameObjects.players = players;
                     return gameObjects;
                 }
 
-                if (!player.statusKeys.left && !player.statusKeys.right) {
-                    players[indexPlayer].coefSpeedX *= -1;
+                if (players[indexPlayer].speedX > 0) {
+                    players[indexPlayer].speedX--;
                 }
-    
-                players[indexPlayer].speedX = players[indexPlayer].speedX * (-1) + players[indexPlayer].coefSpeedX;
+
+                if (players[indexPlayer].speedX < 0) {
+                    players[indexPlayer].speedX++;
+                }
+
+                players[indexPlayer].speedX *= -1;
                 players[indexPlayer].posX = walls[indexWall].posX - players[indexPlayer].width;
-            }
-        } else {
-            if (players[indexPlayer].posY + players[indexPlayer].height > walls[indexWall].posY + walls[indexWall].height / 2) {
-                if (players[indexPlayer].speedY === -1) {
-                    // players[indexPlayer].statusKeys.up = false;
-                    players[indexPlayer].speedY = 0;
-                    players[indexPlayer].posY = walls[indexWall].posY + walls[indexWall].height;
-                    return gameObjects;
-                }
 
-                if (!players[indexPlayer].statusKeys.up && !players[indexPlayer].statusKeys.down) {
-                    players[indexPlayer].coefSpeedY *= -1;
-                }
-    
-                players[indexPlayer].speedY = players[indexPlayer].speedY * (-1) + players[indexPlayer].coefSpeedY;
-                players[indexPlayer].posY = walls[indexWall].posY + walls[indexWall].height;
-            } else {
-                if (players[indexPlayer].speedY === 1) {
-                    // players[indexPlayer].statusKeys.down = false;
-                    players[indexPlayer].speedY = 0;
-                    players[indexPlayer].posY = walls[indexWall].posY - players[indexPlayer].height;
-                    return gameObjects;
-                }
-
-                if (!players[indexPlayer].statusKeys.up && !players[indexPlayer].statusKeys.down) {
-                    players[indexPlayer].coefSpeedY *= -1;
-                }
-    
-                players[indexPlayer].speedY = players[indexPlayer].speedY * (-1) + players[indexPlayer].coefSpeedY;
-                players[indexPlayer].posY = walls[indexWall].posY - players[indexPlayer].height;
+                gameObjects.players = players;
+                return gameObjects;
             }
+
+            // console.log(`SpeedX: ${players[indexPlayer].speedX}\nSpeedY: ${players[indexPlayer].speedY}`);
+            gameObjects.players = players;
+            return gameObjects;
         }
+
+        if (Math.abs(players[indexPlayer].posX - walls[indexWall].posX) < Math.abs(players[indexPlayer].posY - walls[indexWall].posY)) {
+            // console.log('2', players[indexPlayer].posX, players[indexPlayer].posY, walls[indexWall].posX, walls[indexWall].posY);
+            if (players[indexPlayer].posY + players[indexPlayer].height > walls[indexWall].posY + walls[indexWall].height / 2) {
+                if (!players[indexPlayer].speedY) {
+                    players[indexPlayer].posY = walls[indexWall].posY + walls[indexWall].height;
+                    // players[indexPlayer].posY = walls[indexWall].posY + walls[indexWall].height - 1;
+                    gameObjects.players = players;
+                    return gameObjects;
+                }
+
+                if (players[indexPlayer].speedY > 0) {
+                    players[indexPlayer].speedY--;
+                }
+
+                if (players[indexPlayer].speedY < 0) {
+                    players[indexPlayer].speedY++;
+                }
+
+                players[indexPlayer].speedY *= -1;
+                players[indexPlayer].posY = walls[indexWall].posY + walls[indexWall].height;
+
+                gameObjects.players = players;
+                return gameObjects;
+            }
+
+            if (players[indexPlayer].posY + players[indexPlayer].height + 1 < walls[indexWall].posY + walls[indexWall].height / 2) {
+                if (!players[indexPlayer].speedY) {
+                    players[indexPlayer].posY = walls[indexWall].posY - players[indexPlayer].height;
+                    // players[indexPlayer].posY = walls[indexWall].posY - players[indexPlayer].height + 1;
+                    gameObjects.players = players;
+                    return gameObjects;
+                }
+
+                if (players[indexPlayer].speedY > 0) {
+                    players[indexPlayer].speedY--;
+                }
+
+                if (players[indexPlayer].speedY < 0) {
+                    players[indexPlayer].speedY++;
+                }
+
+                players[indexPlayer].speedY *= -1;
+                players[indexPlayer].posY = walls[indexWall].posY - players[indexPlayer].height;
+
+                gameObjects.players = players;
+                return gameObjects;
+            }
+
+            gameObjects.players = players;
+            return gameObjects;
+        }
+
+        // console.log(`SpeedX: ${players[indexPlayer].speedX}\nSpeedY: ${players[indexPlayer].speedY}`);
 
         gameObjects.players = players;
 
@@ -299,9 +344,15 @@ module.exports = class Physics {
             return gameObjects;
         }
 
-        if (players[indexPlayer].posX < scenes[indexScene].posX) {
+        if (players[indexPlayer].posX < scenes[indexScene].posX && players[indexPlayer].maxSpeedX < 0) {
             if (!players[indexPlayer].statusKeys.left && !players[indexPlayer].statusKeys.right) {
                 players[indexPlayer].coefSpeedX *= -1;
+            }
+
+            if (players[indexPlayer].speedX > 0) {
+                players[indexPlayer].speedX--;
+            } else {
+                players[indexPlayer].speedX++;
             }
 
             players[indexPlayer].speedX = players[indexPlayer].speedX * (-1) + players[indexPlayer].coefSpeedX;
@@ -313,6 +364,12 @@ module.exports = class Physics {
                 player.coefSpeedX *= -1;
             }
 
+            if (players[indexPlayer].speedX > 0) {
+                players[indexPlayer].speedX--;
+            } else {
+                players[indexPlayer].speedX++;
+            }
+
             players[indexPlayer].speedX = players[indexPlayer].speedX * (-1) + players[indexPlayer].coefSpeedX;
             players[indexPlayer].posX = scenes[indexScene].posX + scenes[indexScene].width - players[indexPlayer].width;
         }
@@ -322,6 +379,12 @@ module.exports = class Physics {
                 players[indexPlayer].coefSpeedY *= -1;
             }
 
+            if (players[indexPlayer].speedY > 0) {
+                players[indexPlayer].speedY--;
+            } else {
+                players[indexPlayer].speedY++;
+            }
+
             players[indexPlayer].speedY = players[indexPlayer].speedY * (-1) + players[indexPlayer].coefSpeedY;
             players[indexPlayer].posY = scenes[indexScene].posY;
         }
@@ -329,6 +392,12 @@ module.exports = class Physics {
         if (players[indexPlayer].posY + players[indexPlayer].height > scenes[indexScene].posY + scenes[indexScene].height) {
             if (!players[indexPlayer].statusKeys.up && !players[indexPlayer].statusKeys.down) {
                 players[indexPlayer].coefSpeedY *= -1;
+            }
+
+            if (players[indexPlayer].speedY > 0) {
+                players[indexPlayer].speedY--;
+            } else {
+                players[indexPlayer].speedY++;
             }
 
             players[indexPlayer].speedY = players[indexPlayer].speedY * (-1) + players[indexPlayer].coefSpeedY;
@@ -537,29 +606,47 @@ module.exports = class Physics {
         delete this.timers[nickname];
     }
 
-    onStopPlayerSpeed(typeSpeed, player, coefSpeed) {
-        if (Math.abs(player[typeSpeed]) - Math.abs(coefSpeed) < 1) {
-            player[typeSpeed] = 0;
-        } else {
-            player[typeSpeed] += coefSpeed;
+    speedControl(player) {
+        const { maxSpeedX, maxSpeedY, speed, actingBufEffects } = player;
+
+        let bufSpeed = 0;
+
+        for (const bufEffect of actingBufEffects) {
+            if (bufEffect.name === 'boostSpeed') {
+                bufSpeed = bufEffect.speed;
+            }
         }
 
-        return player;
-    }
+        if (maxSpeedX > 0 && player.speedX < speed + bufSpeed) {
+            player.speedX++;
+        }
 
-    onStartPlayerSpeed(typeSpeed, player, coefSpeed, speed) {
-        if (Math.abs(player[typeSpeed]) + Math.abs(coefSpeed) > speed) {
-            let newSpeed;
+        if (maxSpeedX < 0 && player.speedX > - (speed + bufSpeed)) {
+            player.speedX--;
+        }
 
-            if (coefSpeed > 0) {
-                newSpeed = 1;
-            } else {
-                newSpeed = -1;
-            }
+        if (maxSpeedY > 0 && player.speedY < speed + bufSpeed) {
+            player.speedY++;
+        }
 
-            player[typeSpeed] = newSpeed * speed;
-        } else {
-            player[typeSpeed] += coefSpeed;
+        if (maxSpeedY < 0 && player.speedY > - (speed + bufSpeed)) {
+            player.speedY--;
+        }
+
+        if (!maxSpeedX && player.speedX > - maxSpeedX) {
+            player.speedX--;
+        }
+
+        if (!maxSpeedX && player.speedX < maxSpeedX) {
+            player.speedX++;
+        }
+
+        if (!maxSpeedY && player.speedY > - maxSpeedY) {
+            player.speedY--;
+        }
+
+        if (!maxSpeedY && player.speedY < maxSpeedY) {
+            player.speedY++;
         }
 
         return player;
