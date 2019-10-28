@@ -74,114 +74,81 @@ module.exports = class Physics {
             return gameObjects;
         }
 
-        console.log(Math.abs(players[indexPlayer].posX - walls[indexWall].posX), Math.abs(players[indexPlayer].posY - walls[indexWall].posY));
-
         if (Math.abs(players[indexPlayer].posX - walls[indexWall].posX) > Math.abs(players[indexPlayer].posY - walls[indexWall].posY)) {
-            // console.log('1', players[indexPlayer].posX, players[indexPlayer].posY, walls[indexWall].posX, walls[indexWall].posY);
             if (players[indexPlayer].posX + players[indexPlayer].width > walls[indexWall].posX + walls[indexWall].width / 2) {
-                if (!players[indexPlayer].speedX) {
-                    players[indexPlayer].posX = walls[indexWall].posX + walls[indexWall].width;
-                    // players[indexPlayer].posX = walls[indexWall].posX + walls[indexWall].width + 1;
-                    gameObjects.players = players;
-                    return gameObjects;
-                }
-
-                if (players[indexPlayer].speedX > 0) {
-                    players[indexPlayer].speedX--;
-                }
-
-                if (players[indexPlayer].speedX < 0) {
-                    players[indexPlayer].speedX++;
-                }
-
                 players[indexPlayer].speedX *= -1;
+                players[indexPlayer].speedX--;
                 players[indexPlayer].posX = walls[indexWall].posX + walls[indexWall].width;
 
+                if (Math.abs(players[indexPlayer].speedX) <= 1) {
+                    players[indexPlayer].posX = walls[indexWall].posX + walls[indexWall].width;
+                    players[indexPlayer].maxSpeedX = 0;
+                    players[indexPlayer].speedX = 0;
+                }
+
                 gameObjects.players = players;
+
                 return gameObjects;
             }
 
             if (players[indexPlayer].posX + players[indexPlayer].width < walls[indexWall].posX + walls[indexWall].width / 2) {
-                if (!players[indexPlayer].speedX) {
-                    players[indexPlayer].posX = walls[indexWall].posX - players[indexPlayer].width;
-                    // players[indexPlayer].posX = walls[indexWall].posX - players[indexPlayer].width + 1;
-                    gameObjects.players = players;
-                    return gameObjects;
-                }
-
-                if (players[indexPlayer].speedX > 0) {
-                    players[indexPlayer].speedX--;
-                }
-
-                if (players[indexPlayer].speedX < 0) {
-                    players[indexPlayer].speedX++;
-                }
-
                 players[indexPlayer].speedX *= -1;
+                players[indexPlayer].speedX++;
                 players[indexPlayer].posX = walls[indexWall].posX - players[indexPlayer].width;
 
+                if (Math.abs(players[indexPlayer].speedX) <= 1) {
+                    players[indexPlayer].posX = walls[indexWall].posX - players[indexPlayer].width;
+                    players[indexPlayer].maxSpeedX = 0;
+                    players[indexPlayer].speedX = 0;
+                }
+
                 gameObjects.players = players;
+
                 return gameObjects;
             }
 
-            // console.log(`SpeedX: ${players[indexPlayer].speedX}\nSpeedY: ${players[indexPlayer].speedY}`);
             gameObjects.players = players;
+
             return gameObjects;
         }
 
         if (Math.abs(players[indexPlayer].posX - walls[indexWall].posX) < Math.abs(players[indexPlayer].posY - walls[indexWall].posY)) {
-            // console.log('2', players[indexPlayer].posX, players[indexPlayer].posY, walls[indexWall].posX, walls[indexWall].posY);
             if (players[indexPlayer].posY + players[indexPlayer].height > walls[indexWall].posY + walls[indexWall].height / 2) {
-                if (!players[indexPlayer].speedY) {
-                    players[indexPlayer].posY = walls[indexWall].posY + walls[indexWall].height;
-                    // players[indexPlayer].posY = walls[indexWall].posY + walls[indexWall].height - 1;
-                    gameObjects.players = players;
-                    return gameObjects;
-                }
-
-                if (players[indexPlayer].speedY > 0) {
-                    players[indexPlayer].speedY--;
-                }
-
-                if (players[indexPlayer].speedY < 0) {
-                    players[indexPlayer].speedY++;
-                }
-
                 players[indexPlayer].speedY *= -1;
+                players[indexPlayer].speedY--;
                 players[indexPlayer].posY = walls[indexWall].posY + walls[indexWall].height;
 
+                if (Math.abs(players[indexPlayer].speedY) <= 1) {
+                    players[indexPlayer].posY = walls[indexWall].posY + walls[indexWall].height;
+                    players[indexPlayer].maxSpeedY = 0;
+                    players[indexPlayer].speedY = 0;
+                }
+
                 gameObjects.players = players;
+
                 return gameObjects;
             }
 
-            if (players[indexPlayer].posY + players[indexPlayer].height + 1 < walls[indexWall].posY + walls[indexWall].height / 2) {
-                if (!players[indexPlayer].speedY) {
-                    players[indexPlayer].posY = walls[indexWall].posY - players[indexPlayer].height;
-                    // players[indexPlayer].posY = walls[indexWall].posY - players[indexPlayer].height + 1;
-                    gameObjects.players = players;
-                    return gameObjects;
-                }
-
-                if (players[indexPlayer].speedY > 0) {
-                    players[indexPlayer].speedY--;
-                }
-
-                if (players[indexPlayer].speedY < 0) {
-                    players[indexPlayer].speedY++;
-                }
-
+            if (players[indexPlayer].posY + players[indexPlayer].height < walls[indexWall].posY + walls[indexWall].height / 2) {
                 players[indexPlayer].speedY *= -1;
+                players[indexPlayer].speedY++;
                 players[indexPlayer].posY = walls[indexWall].posY - players[indexPlayer].height;
 
+                if (Math.abs(players[indexPlayer].speedY) <= 1) {
+                    players[indexPlayer].posY = walls[indexWall].posY - players[indexPlayer].height;
+                    players[indexPlayer].maxSpeedY = 0;
+                    players[indexPlayer].speedY = 0;
+                }
+
                 gameObjects.players = players;
+
                 return gameObjects;
             }
 
             gameObjects.players = players;
+
             return gameObjects;
         }
-
-        // console.log(`SpeedX: ${players[indexPlayer].speedX}\nSpeedY: ${players[indexPlayer].speedY}`);
 
         gameObjects.players = players;
 

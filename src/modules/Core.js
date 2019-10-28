@@ -107,13 +107,14 @@ module.exports = class Core {
     }
 
     createBullet(dataObj) {
-        const { nickname, playerBufEffects, clickPosX, clickPosY, playerPosX, playerPosY, playerWidth, playerHeight, weapon } = dataObj;
+        console.log(dataObj);
+        const { nickname, playerBufEffects, offsetPosX, offsetPosY, playerPosX, playerPosY, playerWidth, playerHeight, weapon } = dataObj;
         const { gameSettings: { objects: { bullets } } } = this.config;
         const { speed, size, damage, timeLife } = bullets[weapon];
 
         const bulletsArray = this.gameObjects.getGameObject('bullets');
 
-        const { speedX, speedY } = this.getSpeedXY({ playerPosX, playerPosY, bulletSize: size, clickPosX, clickPosY, bulletSpeed: speed });
+        const { speedX, speedY } = this.getSpeedXY({ playerPosX, playerPosY, bulletSize: size, offsetPosX, offsetPosY, bulletSpeed: speed });
 
         let doubleDamage = 1;
 
@@ -193,8 +194,18 @@ module.exports = class Core {
             idClient,
             health,
             weapon: this.defaultWeapon,
+            cursorPosition: {
+                offsetPosX: 0,
+                offsetPosY: 0,
+            },
             posX: newPosX + (sizeLowWall.width / 2 - sizePlayers.width / 2),
             posY: newPosY + (sizeLowWall.height / 2 - sizePlayers.height / 2),
+            collisionState: {
+                left: false,
+                right: false,
+                top: false,
+                bottom: false,
+            },
             width: sizePlayers.width,
             height: sizePlayers.height,
             speedX: 0,
@@ -202,6 +213,7 @@ module.exports = class Core {
             coefSpeedX: 0,
             coefSpeedY: 0,
             speed,
+            rotate: 0,
             statusKeys: {
                 up: false,
                 down: false,
@@ -364,8 +376,33 @@ module.exports = class Core {
         }
     }
 
+    // void Animation::playerRotation(Player* player)
+    // {
+    //     const QMap<QString, qreal> size = player->getSize();
+    //     const QMap<QString, qreal> position = player->getPosDisplay();
+
+    //     const QPointF cursor = player->getCursor();
+
+    //     const qreal cx = position["width"];
+    //     const qreal cy = position["height"];
+    //     const qreal angle = qAtan2(cursor.y() - cy, cursor.x() - cx) * HALF_G / PI;
+
+    //     if (static_cast<int>(player->getRotate()) == static_cast<int>(angle)) {
+    //         return;
+    //     }
+
+    //     player->setRotate(angle);
+    // }
+
+    setRotationPlayer(data) {
+        const {posX, posY} = data;
+        const posOffsetDisplay = {widthDisplay: 400, heightDisplay: 300};
+
+        return Math.floor(Math.atan2(posY - posOffsetDisplay.heightDisplay, posX - posOffsetDisplay.widthDisplay) * 180 / 3.14);
+    }
+
     onMouse(dataObj) {
-        const { nickname, isClicked } = dataObj;
+        const { posX, posY, nickname, isClicked } = dataObj;
 
         let players = this.gameObjects.getGameObject('players');
         let indexPlayer = -1;
@@ -382,6 +419,8 @@ module.exports = class Core {
             console.log(`Player ${nickname} is not exist`);
             return;
         }
+
+        players[indexPlayer].rotation = this.setRotationPlayer({ posX, posY });
 
         if (isClicked && players[indexPlayer].isRateFire) {
             this.createBullet(Object.assign({
@@ -410,18 +449,18 @@ module.exports = class Core {
     }
 
     getSpeedXY(dataObj) {
-        const { bulletSize, clickPosX, clickPosY, bulletSpeed } = dataObj;
+        const { bulletSize, offsetPosX, offsetPosY, bulletSpeed } = dataObj;
 
         let { playerPosX, playerPosY } = dataObj;
 
         playerPosX += bulletSize.width / 2;
         playerPosY += bulletSize.height / 2;
 
-        const speedX = ((clickPosX - playerPosX) * bulletSpeed
-            / Math.sqrt(Math.pow(clickPosX - playerPosX, 2) + Math.pow(clickPosY - playerPosY, 2)));
+        const speedX = ((offsetPosX - playerPosX) * bulletSpeed
+            / Math.sqrt(Math.pow(offsetPosX - playerPosX, 2) + Math.pow(offsetPosY - playerPosY, 2)));
 
-        const speedY = ((clickPosY - playerPosY) * bulletSpeed
-            / Math.sqrt(Math.pow(clickPosX - playerPosX, 2) + Math.pow(clickPosY - playerPosY, 2)));
+        const speedY = ((offsetPosY - playerPosY) * bulletSpeed
+            / Math.sqrt(Math.pow(offsetPosX - playerPosX, 2) + Math.pow(offsetPosY - playerPosY, 2)));
 
         return { speedX, speedY };
     }
@@ -553,7 +592,6 @@ module.exports = class Core {
 
     motionDistribution(player, key, isHold) {
         if (player.controlKeys.includes('left') && player.controlKeys.length === 1) {
-            console.log('left');
             player.maxSpeedX = - player.speed;
             player.maxSpeedY = 0;
         }
@@ -597,12 +635,33 @@ module.exports = class Core {
             player.controlKeys.splice(player.controlKeys.indexOf(key), 1);
 
             if (key === 'left' || key === 'right') {
+                player.collisionState.left = false;
+                player.collisionState.right = false;
                 player.maxSpeedX = 0;
             }
             
             if (key === 'up' || key === 'down') {
+                player.collisionState.top = false;
+                player.collisionState.bottom = false;
                 player.maxSpeedY = 0;
             }
+        }
+
+        player = this.onCollisionMovement(player);
+
+        console.log(player.collisionState);
+        return player;
+    }
+
+    onCollisionMovement(player) {
+        const {collisionState: {left, right, bottom, top}} = player;
+        
+        if (left || right) {
+            player.maxSpeedX = 0;
+        }
+
+        if (top || bottom) {
+            player.maxSpeedY = 0;
         }
 
         return player;
