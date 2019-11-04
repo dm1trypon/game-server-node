@@ -48,7 +48,7 @@ module.exports = class Events {
         return this.core.isVerify(dataObj);
     }
 
-    onCloseConnection(idClient) {
-        this.core.onCloseConnection(idClient);
+    onCloseConnection(id) {
+        this.core.onCloseConnection(id);
     }
 }

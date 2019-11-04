@@ -165,7 +165,7 @@ module.exports = class Core {
     }
 
     createPlayer(dataObj, players) {
-        const { nickname, idClient } = dataObj;
+        const { nickname, id } = dataObj;
         const {
             gameSettings: { 
                 objects: { scene: { size: sizeScene }, players: { size: sizePlayers, speed, health }, bullets, walls },
@@ -191,7 +191,7 @@ module.exports = class Core {
 
         const newPlayerObj = {
             nickname,
-            idClient,
+            id,
             health,
             weapon: this.defaultWeapon,
             cursorPosition: {
@@ -376,24 +376,6 @@ module.exports = class Core {
         }
     }
 
-    // void Animation::playerRotation(Player* player)
-    // {
-    //     const QMap<QString, qreal> size = player->getSize();
-    //     const QMap<QString, qreal> position = player->getPosDisplay();
-
-    //     const QPointF cursor = player->getCursor();
-
-    //     const qreal cx = position["width"];
-    //     const qreal cy = position["height"];
-    //     const qreal angle = qAtan2(cursor.y() - cy, cursor.x() - cx) * HALF_G / PI;
-
-    //     if (static_cast<int>(player->getRotate()) == static_cast<int>(angle)) {
-    //         return;
-    //     }
-
-    //     player->setRotate(angle);
-    // }
-
     setRotationPlayer(data) {
         const {posX, posY} = data;
         const posOffsetDisplay = {widthDisplay: 400, heightDisplay: 300};
@@ -465,11 +447,11 @@ module.exports = class Core {
         return { speedX, speedY };
     }
 
-    onCloseConnection(idClient) {
+    onCloseConnection(id) {
         const playersArray = this.gameObjects.getGameObject('players');
 
         for (const player of playersArray) {
-            if (player.idClient !== idClient) {
+            if (player.id !== id) {
                 continue;
             }
 

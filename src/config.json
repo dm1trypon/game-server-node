@@ -111,7 +111,7 @@
                         "height": 70
                     },
                     "interval": 17000,
-                    "speed": [1, 5],
+                    "speed": [1, 2],
                     "time": 20
                 },
                 "boostRate": {

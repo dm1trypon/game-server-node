@@ -12,7 +12,7 @@ module.exports = class WorkJson {
         this.events.initCore();
     }
 
-    fromData(idClient, data) {
+    fromData(id, data) {
         let dataObj;
 
         try {
@@ -22,13 +22,13 @@ module.exports = class WorkJson {
             return;
         }
 
-        dataObj.idClient = idClient;
+        dataObj.id = id;
 
         this.toEvents(dataObj);
     }
 
-    onCloseConnection(idClient) {
-        this.events.onCloseConnection(idClient);
+    onCloseConnection(id) {
+        this.events.onCloseConnection(id);
     }
 
     toEvents(dataObj) {
@@ -49,7 +49,7 @@ module.exports = class WorkJson {
                     break;
                 }
 
-                server.disconnect(dataObj.idClient);
+                server.disconnect(dataObj.id);
                 break;
 
             default:
@@ -61,7 +61,7 @@ module.exports = class WorkJson {
         this.server.sendAll(JSON.stringify(objects));
     }
 
-    toVerify(idClient) {
-        this.server.send(idClient, JSON.stringify({method: 'verify'}));
+    toVerify(id) {
+        this.server.send(id, JSON.stringify({method: 'verify'}));
     }
 }
