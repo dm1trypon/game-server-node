@@ -80,11 +80,11 @@ module.exports = class Physics {
                 players[indexPlayer].speedX--;
                 players[indexPlayer].posX = walls[indexWall].posX + walls[indexWall].width;
 
-                if (Math.abs(players[indexPlayer].speedX) <= 1) {
-                    players[indexPlayer].posX = walls[indexWall].posX + walls[indexWall].width;
-                    players[indexPlayer].maxSpeedX = 0;
-                    players[indexPlayer].speedX = 0;
-                }
+                // if (Math.abs(players[indexPlayer].speedX) <= 1) {
+                //     players[indexPlayer].posX = walls[indexWall].posX + walls[indexWall].width;
+                //     players[indexPlayer].maxSpeedX = 0;
+                //     players[indexPlayer].speedX = 0;
+                // }
 
                 gameObjects.players = players;
 
@@ -96,11 +96,11 @@ module.exports = class Physics {
                 players[indexPlayer].speedX++;
                 players[indexPlayer].posX = walls[indexWall].posX - players[indexPlayer].width;
 
-                if (Math.abs(players[indexPlayer].speedX) <= 1) {
-                    players[indexPlayer].posX = walls[indexWall].posX - players[indexPlayer].width;
-                    players[indexPlayer].maxSpeedX = 0;
-                    players[indexPlayer].speedX = 0;
-                }
+                // if (Math.abs(players[indexPlayer].speedX) <= 1) {
+                //     players[indexPlayer].posX = walls[indexWall].posX - players[indexPlayer].width;
+                //     players[indexPlayer].maxSpeedX = 0;
+                //     players[indexPlayer].speedX = 0;
+                // }
 
                 gameObjects.players = players;
 
@@ -118,11 +118,11 @@ module.exports = class Physics {
                 players[indexPlayer].speedY--;
                 players[indexPlayer].posY = walls[indexWall].posY + walls[indexWall].height;
 
-                if (Math.abs(players[indexPlayer].speedY) <= 1) {
-                    players[indexPlayer].posY = walls[indexWall].posY + walls[indexWall].height;
-                    players[indexPlayer].maxSpeedY = 0;
-                    players[indexPlayer].speedY = 0;
-                }
+                // if (Math.abs(players[indexPlayer].speedY) <= 1) {
+                //     players[indexPlayer].posY = walls[indexWall].posY + walls[indexWall].height;
+                //     players[indexPlayer].maxSpeedY = 0;
+                //     players[indexPlayer].speedY = 0;
+                // }
 
                 gameObjects.players = players;
 
@@ -134,11 +134,11 @@ module.exports = class Physics {
                 players[indexPlayer].speedY++;
                 players[indexPlayer].posY = walls[indexWall].posY - players[indexPlayer].height;
 
-                if (Math.abs(players[indexPlayer].speedY) <= 1) {
-                    players[indexPlayer].posY = walls[indexWall].posY - players[indexPlayer].height;
-                    players[indexPlayer].maxSpeedY = 0;
-                    players[indexPlayer].speedY = 0;
-                }
+                // if (Math.abs(players[indexPlayer].speedY) <= 1) {
+                //     players[indexPlayer].posY = walls[indexWall].posY - players[indexPlayer].height;
+                //     players[indexPlayer].maxSpeedY = 0;
+                //     players[indexPlayer].speedY = 0;
+                // }
 
                 gameObjects.players = players;
 

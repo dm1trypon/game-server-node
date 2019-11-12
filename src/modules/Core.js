@@ -107,7 +107,6 @@ module.exports = class Core {
     }
 
     createBullet(dataObj) {
-        console.log(dataObj);
         const { nickname, playerBufEffects, offsetPosX, offsetPosY, playerPosX, playerPosY, playerWidth, playerHeight, weapon } = dataObj;
         const { gameSettings: { objects: { bullets } } } = this.config;
         const { speed, size, damage, timeLife } = bullets[weapon];
@@ -404,6 +403,10 @@ module.exports = class Core {
 
         players[indexPlayer].rotation = this.setRotationPlayer({ posX, posY });
 
+        if (players[indexPlayer].weaponNumberBullet <= 0 && players[indexPlayer].weapon !== this.defaultWeapon) {
+            return;
+        }
+
         if (isClicked && players[indexPlayer].isRateFire) {
             this.createBullet(Object.assign({
                 playerPosX: players[indexPlayer].posX,
@@ -519,6 +522,10 @@ module.exports = class Core {
         return true;
     }
 
+    onChangeWeapon() {
+        weapon
+    }
+
     controlPlayer(controlData) {
         const { nickname, key, isHold } = controlData;
 
@@ -539,6 +546,21 @@ module.exports = class Core {
             console.log(`Player with nickname ${nickname} is not found!`);
 
             return;
+        }
+
+        switch (key) {
+            case '1':
+                players[index].weapon = 'blaster';
+                this.gameObjects.setGameObject('players', players);
+                return;
+
+            case '2':
+                players[index].weapon = 'plazma';
+                this.gameObjects.setGameObject('players', players);
+                return;
+
+            default:
+                break;
         }
 
         if (!players[index].controlKeys.includes(key) && !isHold) {
@@ -566,49 +588,49 @@ module.exports = class Core {
     }
 
     isNotAcceptRulesKeys(keys, key, isHold) {
-        return keys.includes('up') && key === 'down' && isHold ||
-            keys.includes('down') && key === 'up' && isHold ||
-            keys.includes('right') && key === 'left' && isHold ||
-            keys.includes('left') && key === 'right' && isHold;
+        return keys.includes('w') && key === 's' && isHold ||
+            keys.includes('s') && key === 'w' && isHold ||
+            keys.includes('d') && key === 'a' && isHold ||
+            keys.includes('a') && key === 'd' && isHold;
     }
 
     motionDistribution(player, key, isHold) {
-        if (player.controlKeys.includes('left') && player.controlKeys.length === 1) {
+        if (player.controlKeys.includes('a') && player.controlKeys.length === 1) {
             player.maxSpeedX = - player.speed;
             player.maxSpeedY = 0;
         }
 
-        if (player.controlKeys.includes('right') && player.controlKeys.length === 1) {
+        if (player.controlKeys.includes('d') && player.controlKeys.length === 1) {
             player.maxSpeedX = player.speed;
             player.maxSpeedY = 0;
         }
 
-        if (player.controlKeys.includes('up') && player.controlKeys.length === 1) {
+        if (player.controlKeys.includes('w') && player.controlKeys.length === 1) {
             player.maxSpeedX = 0;
             player.maxSpeedY = - player.speed;
         }
 
-        if (player.controlKeys.includes('down') && player.controlKeys.length === 1) {
+        if (player.controlKeys.includes('s') && player.controlKeys.length === 1) {
             player.maxSpeedX = 0;
             player.maxSpeedY = player.speed;
         }
 
-        if (player.controlKeys.includes('left') && player.controlKeys.includes('up')) {
+        if (player.controlKeys.includes('a') && player.controlKeys.includes('w')) {
             player.maxSpeedX = - player.speed;
             player.maxSpeedY = - player.speed;
         }
 
-        if (player.controlKeys.includes('left') && player.controlKeys.includes('down')) {
+        if (player.controlKeys.includes('a') && player.controlKeys.includes('s')) {
             player.maxSpeedX = - player.speed;
             player.maxSpeedY = player.speed;
         }
 
-        if (player.controlKeys.includes('right') && player.controlKeys.includes('up')) {
+        if (player.controlKeys.includes('d') && player.controlKeys.includes('w')) {
             player.maxSpeedX = player.speed;
             player.maxSpeedY = - player.speed;
         }
 
-        if (player.controlKeys.includes('right') && player.controlKeys.includes('down')) {
+        if (player.controlKeys.includes('d') && player.controlKeys.includes('s')) {
             player.maxSpeedX = player.speed;
             player.maxSpeedY = player.speed;
         }
@@ -616,13 +638,13 @@ module.exports = class Core {
         if (!isHold) {
             player.controlKeys.splice(player.controlKeys.indexOf(key), 1);
 
-            if (key === 'left' || key === 'right') {
+            if (key === 'a' || key === 'd') {
                 player.collisionState.left = false;
                 player.collisionState.right = false;
                 player.maxSpeedX = 0;
             }
             
-            if (key === 'up' || key === 'down') {
+            if (key === 'w' || key === 's') {
                 player.collisionState.top = false;
                 player.collisionState.bottom = false;
                 player.maxSpeedY = 0;
