@@ -403,7 +403,10 @@ module.exports = class Core {
 
         players[indexPlayer].rotation = this.setRotationPlayer({ posX, posY });
 
-        if (players[indexPlayer].weaponNumberBullet <= 0 && players[indexPlayer].weapon !== this.defaultWeapon) {
+        const weapon = players[indexPlayer].weapon;
+
+        if (players[indexPlayer].weaponNumberBullet[weapon] <= 0 && weapon !== this.defaultWeapon) {
+            console.log(`Out of bullets! Weapon: ${weapon}.`);
             return;
         }
 
@@ -414,11 +417,15 @@ module.exports = class Core {
                 playerWidth: players[indexPlayer].width,
                 playerHeight: players[indexPlayer].height,
                 playerBufEffects: players[indexPlayer].actingBufEffects,
-                weapon: players[indexPlayer].weapon,
+                weapon,
             }, dataObj));
 
             players[indexPlayer].isRateFire = false;
 
+            if (players[indexPlayer].weaponNumberBullet[weapon] > 0 && weapon !== this.defaultWeapon) {
+                players[indexPlayer].weaponNumberBullet[weapon] --;
+            }
+            
             let boostRate = 0;
 
             for (const bufEffect of players[indexPlayer].actingBufEffects) {
@@ -427,10 +434,20 @@ module.exports = class Core {
                 }
             }
 
-            setTimeout(() => { players[indexPlayer].isRateFire = true }, (players[indexPlayer].rateFire - boostRate) * 10);
+            this.onRateOfFireTimer(players[indexPlayer], boostRate);
         }
 
         this.gameObjects.setGameObject('players', players);
+    }
+
+    onRateOfFireTimer(player, boostRate) {
+        setTimeout(() => { 
+            if (typeof player.isRateFire === 'undefined') {
+                return;
+            }
+
+            player.isRateFire = true;
+        }, (player.rateFire - boostRate) * 10);
     }
 
     getSpeedXY(dataObj) {
@@ -522,11 +539,8 @@ module.exports = class Core {
         return true;
     }
 
-    onChangeWeapon() {
-        weapon
-    }
-
     controlPlayer(controlData) {
+        const { gameSettings: { objects: { bullets } } } = this.config;
         const { nickname, key, isHold } = controlData;
 
         let players = this.gameObjects.getGameObject('players');
@@ -551,11 +565,15 @@ module.exports = class Core {
         switch (key) {
             case '1':
                 players[index].weapon = 'blaster';
+                players[index].rateFire = bullets[players[index].weapon].rate;
+
                 this.gameObjects.setGameObject('players', players);
                 return;
 
             case '2':
                 players[index].weapon = 'plazma';
+                players[index].rateFire = bullets[players[index].weapon].rate;
+
                 this.gameObjects.setGameObject('players', players);
                 return;
 
@@ -653,7 +671,6 @@ module.exports = class Core {
 
         player = this.onCollisionMovement(player);
 
-        console.log(player.collisionState);
         return player;
     }
 

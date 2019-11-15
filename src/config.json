@@ -61,11 +61,11 @@
                 },
                 "blaster": {
                     "size": {
-                        "width": 30,
-                        "height": 30
+                        "width": 40,
+                        "height": 40
                     },
                     "speed": 25,
-                    "rate": 8,
+                    "rate": 25,
                     "damage": 13,
                     "timeLife": 150,
                     "default": false,
